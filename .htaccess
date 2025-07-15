@@ -1,0 +1,3 @@
+RewriteEngine On
+RewriteBase /
+RewriteRule ^$ /SmartSaku/src/templates/home.html [L]

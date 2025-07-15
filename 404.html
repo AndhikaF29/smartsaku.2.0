@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Halaman Tidak Ditemukan - SmartSaku</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+    />
+    <script>
+      // In case of wrong navigation paths, try to recover by redirecting
+      const pathSegments = window.location.pathname.split("/");
+      const baseUrl = window.location.origin + "/SmartSaku/";
+
+      // Add a small timeout to allow reading the error message
+      setTimeout(() => {
+        window.location.href = baseUrl;
+      }, 4000);
+    </script>
+  </head>
+  <body
+    class="bg-gradient-to-br from-blue-50 to-white min-h-screen flex items-center justify-center p-4"
+  >
+    <div class="text-center max-w-md">
+      <div class="mb-8 text-blue-500">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="1.5"
+          stroke="currentColor"
+          class="w-16 h-16 mx-auto"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"
+          />
+        </svg>
+      </div>
+      <h1 class="text-3xl font-bold mb-4 text-gray-800">
+        Halaman Tidak Ditemukan
+      </h1>
+      <p class="text-gray-600 mb-6">
+        Maaf, halaman yang Anda cari tidak dapat ditemukan. Anda akan dialihkan
+        ke halaman utama dalam beberapa detik.
+      </p>
+      <a
+        href="/SmartSaku/"
+        class="inline-block bg-blue-600 text-white px-5 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+      >
+        Kembali ke Beranda
+      </a>
+    </div>
+  </body>
+</html>

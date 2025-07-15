@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pengaturan - SmartSaku</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="../css/dashboard.css" />
+    <style>
+      .settings-card {
+        background: white;
+        border-radius: 1rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .switch {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 34px;
+      }
+
+      .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+
+      .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: 0.4s;
+        border-radius: 34px;
+      }
+
+      .slider:before {
+        position: absolute;
+        content: "";
+        height: 26px;
+        width: 26px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: 0.4s;
+        border-radius: 50%;
+      }
+
+      input:checked + .slider {
+        background-color: #3b82f6;
+      }
+
+      input:checked + .slider:before {
+        transform: translateX(26px);
+      }
+
+      .danger-zone {
+        border: 2px solid #ef4444;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        background: #fef2f2;
+      }
+
+      .success-animation {
+        animation: success-bounce 0.6s ease;
+      }
+
+      @keyframes success-bounce {
+        0% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.05);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+
+      .profile-avatar {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        color: white;
+        margin: 0 auto;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .avatar-upload {
+        position: absolute;
+        bottom: 0;
+        right: 10px;
+        background: #3b82f6;
+        border-radius: 50%;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .avatar-upload:hover {
+        background: #2563eb;
+        transform: scale(1.1);
+      }
+
+      .theme-option {
+        border: 2px solid #e5e7eb;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .theme-option.active {
+        border-color: #3b82f6;
+        background: #eff6ff;
+      }
+
+      .loading {
+        width: 2rem;
+        height: 2rem;
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #3498db;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50">
+    <!-- Mobile Menu Button -->
+    <button id="mobileMenuBtn" class="mobile-menu-btn lg:hidden">
+      <i class="fas fa-bars text-gray-600"></i>
+    </button>
+
+    <!-- Sidebar Overlay -->
+    <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+    <!-- Sidebar -->
+    <aside
+      id="sidebar"
+      class="w-64 bg-white shadow-lg sidebar-transition fixed h-full"
+    >
+      <div class="p-6">
+        <div class="flex items-center space-x-3">
+          <div
+            class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center"
+          >
+            <i class="fas fa-wallet text-white"></i>
+          </div>
+          <div>
+            <h1 class="text-xl font-bold text-gray-800">SmartSaku</h1>
+            <p class="text-sm text-gray-600">Keuangan Pintar</p>
+          </div>
+        </div>
+      </div>
+
+      <nav class="mt-8">
+        <a
+          href="dashboard.html"
+          class="nav-link flex items-center px-6 py-3 text-gray-700 hover:bg-gray-100"
+        >
+          <i class="fas fa-chart-line mr-3"></i>
+          Dashboard
+        </a>
+        <a
+          href="transaksi.html"
+          class="nav-link flex items-center px-6 py-3 text-gray-700 hover:bg-gray-100"
+        >
+          <i class="fas fa-exchange-alt mr-3"></i>
+          Transaksi
+        </a>
+        <a
+          href="laporan.html"
+          class="nav-link flex items-center px-6 py-3 text-gray-700 hover:bg-gray-100"
+        >
+          <i class="fas fa-file-alt mr-3"></i>
+          Laporan
+        </a>
+        <a
+          href="pengaturan.html"
+          class="nav-link active flex items-center px-6 py-3 text-gray-700 hover:bg-gray-100 bg-blue-50 text-blue-600"
+        >
+          <i class="fas fa-cog mr-3"></i>
+          Pengaturan
+        </a>
+      </nav>
+
+      <div class="absolute bottom-0 w-full p-6">
+        <div class="flex items-center space-x-3 p-3 bg-gray-100 rounded-lg">
+          <div
+            class="w-10 h-10 bg-gray-400 rounded-full flex items-center justify-center"
+          >
+            <i class="fas fa-user text-white"></i>
+          </div>
+          <div class="flex-1">
+            <p id="sidebarUserName" class="text-sm font-medium text-gray-800">
+              Loading...
+            </p>
+            <p class="text-xs text-gray-600">Mahasiswa</p>
+          </div>
+          <button id="logoutBtn" class="text-gray-600 hover:text-red-600">
+            <i class="fas fa-sign-out-alt"></i>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="ml-64 min-h-screen">
+      <div class="p-6">
+        <!-- Header -->
+        <div class="mb-8">
+          <h1 class="text-3xl font-bold text-gray-900">Pengaturan</h1>
+          <p class="text-gray-600">Kelola akun dan preferensi aplikasi Anda</p>
+        </div>
+
+        <!-- Profile Settings -->
+        <div class="settings-card">
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="text-lg font-semibold text-gray-900">Profil Pengguna</h3>
+            <button
+              id="editProfileBtn"
+              class="text-blue-600 hover:text-blue-800 font-medium"
+            >
+              <i class="fas fa-edit mr-2"></i>Edit Profil
+            </button>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Avatar Section -->
+            <div class="lg:col-span-1">
+              <div class="text-center">
+                <div class="profile-avatar mb-4">
+                  <i id="avatarIcon" class="fas fa-user"></i>
+                  <div class="avatar-upload">
+                    <i class="fas fa-camera text-sm"></i>
+                    <input
+                      type="file"
+                      id="avatarInput"
+                      class="hidden"
+                      accept="image/*"
+                    />
+                  </div>
+                </div>
+                <h4
+                  id="profileName"
+                  class="text-lg font-semibold text-gray-900"
+                >
+                  Loading...
+                </h4>
+                <p id="profileEmail" class="text-gray-600">Loading...</p>
+              </div>
+            </div>
+
+            <!-- Profile Form -->
+            <div class="lg:col-span-2">
+              <form id="profileForm" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2"
+                      >Nama Lengkap</label
+                    >
+                    <input
+                      type="text"
+                      id="namaLengkap"
+                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      disabled
+                    />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2"
+                      >Email</label
+                    >
+                    <input
+                      type="email"
+                      id="email"
+                      class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50"
+                      disabled
+                      readonly
+                    />
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2"
+                      >Nomor Telepon</label
+                    >
+                    <input
+                      type="tel"
+                      id="nomorTelepon"
+                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      disabled
+                    />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2"
+                      >Tanggal Lahir</label
+                    >
+                    <input
+                      type="date"
+                      id="tanggalLahir"
+                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      disabled
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2"
+                    >Universitas/Institusi</label
+                  >
+                  <input
+                    type="text"
+                    id="universitas"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    disabled
+                  />
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2"
+                    >Jurusan</label
+                  >
+                  <input
+                    type="text"
+                    id="jurusan"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    disabled
+                  />
+                </div>
+
+                <div class="hidden" id="profileActions">
+                  <div class="flex space-x-3 pt-4">
+                    <button
+                      type="button"
+                      id="cancelProfileBtn"
+                      class="flex-1 px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
+                    >
+                      Batal
+                    </button>
+                    <button
+                      type="submit"
+                      id="saveProfileBtn"
+                      class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                      Simpan Perubahan
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- Password Settings -->
+        <div class="settings-card">
+          <h3 class="text-lg font-semibold text-gray-900 mb-6">Keamanan</h3>
+
+          <div class="space-y-6">
+            <!-- Change Password -->
+            <div>
+              <h4 class="text-md font-medium text-gray-800 mb-4">
+                Ubah Password
+              </h4>
+              <form id="passwordForm" class="space-y-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2"
+                    >Password Saat Ini</label
+                  >
+                  <input
+                    type="password"
+                    id="currentPassword"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2"
+                    >Password Baru</label
+                  >
+                  <input
+                    type="password"
+                    id="newPassword"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2"
+                    >Konfirmasi Password Baru</label
+                  >
+                  <input
+                    type="password"
+                    id="confirmPassword"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    required
+                  />
+                </div>
+                <button
+                  type="submit"
+                  class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Ubah Password
+                </button>
+              </form>
+            </div>
+
+            
+          </div>
+        </div>
+
+        
+
+        <!-- Data Management -->
+        <div class="settings-card">
+          <h3 class="text-lg font-semibold text-gray-900 mb-6">
+            Manajemen Data
+          </h3>
+
+          <div class="space-y-6">
+            <!-- Export Data -->
+            <div>
+              <h4 class="text-md font-medium text-gray-800 mb-4">
+                Export Data
+              </h4>
+              <p class="text-sm text-gray-600 mb-4">
+                Download semua data transaksi Anda
+              </p>
+              <div class="flex space-x-3">
+                <button
+                  id="exportAllDataBtn"
+                  class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                >
+                  <i class="fas fa-download mr-2"></i>Export All Data
+                </button>
+                <button
+                  id="exportBackupBtn"
+                  class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  <i class="fas fa-cloud-download-alt mr-2"></i>Backup Data
+                </button>
+              </div>
+            </div>
+
+            <!-- Import Data -->
+            <div class="border-t pt-6">
+              <h4 class="text-md font-medium text-gray-800 mb-4">
+                Import Data
+              </h4>
+              <p class="text-sm text-gray-600 mb-4">
+                Restore data dari backup sebelumnya
+              </p>
+              <div class="flex items-center space-x-3">
+                <input
+                  type="file"
+                  id="importFileInput"
+                  class="hidden"
+                  accept=".json,.csv,.xlsx"
+                />
+                <button
+                  id="importDataBtn"
+                  class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                >
+                  <i class="fas fa-upload mr-2"></i>Import Data
+                </button>
+                <span id="importFileName" class="text-sm text-gray-600"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Danger Zone -->
+        <div class="danger-zone">
+          <h3 class="text-lg font-semibold text-red-600 mb-4">Danger Zone</h3>
+          <div class="space-y-4">
+            <div>
+              <h4 class="text-md font-medium text-gray-800 mb-2">
+                Hapus Semua Data
+              </h4>
+              <p class="text-sm text-gray-600 mb-4">
+                Hapus semua transaksi dan reset akun Anda. Tindakan ini tidak
+                dapat dibatalkan.
+              </p>
+              <button
+                id="deleteAllDataBtn"
+                class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              >
+                <i class="fas fa-trash mr-2"></i>Hapus Semua Data
+              </button>
+            </div>
+
+            <div class="border-t border-red-200 pt-4">
+              <h4 class="text-md font-medium text-gray-800 mb-2">Hapus Akun</h4>
+              <p class="text-sm text-gray-600 mb-4">
+                Hapus akun Anda secara permanen. Semua data akan hilang dan
+                tidak dapat dipulihkan.
+              </p>
+              <button
+                id="deleteAccountBtn"
+                class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              >
+                <i class="fas fa-user-times mr-2"></i>Hapus Akun
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Confirmation Modal -->
+    <div
+      id="confirmationModal"
+      class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50"
+    >
+      <div class="flex items-center justify-center min-h-screen px-4">
+        <div class="bg-white rounded-2xl p-6 w-full max-w-md">
+          <div class="text-center">
+            <div
+              id="confirmIcon"
+              class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4"
+            >
+              <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+            </div>
+            <h3
+              id="confirmTitle"
+              class="text-lg font-semibold text-gray-900 mb-2"
+            >
+              Konfirmasi Tindakan
+            </h3>
+            <p id="confirmMessage" class="text-gray-600 mb-6">
+              Apakah Anda yakin ingin melanjutkan?
+            </p>
+            <div class="flex space-x-3">
+              <button
+                id="confirmCancelBtn"
+                class="flex-1 px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
+              >
+                Batal
+              </button>
+              <button
+                id="confirmActionBtn"
+                class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              >
+                Konfirmasi
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="../js/pengaturan.js"></script>
+  </body>
+</html>

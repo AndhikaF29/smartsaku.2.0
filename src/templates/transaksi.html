@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Transaksi - SmartSaku</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="../css/dashboard.css" />
+    <style>
+      .stats-card {
+        background: white;
+        border-radius: 1rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        padding: 1.5rem;
+      }
+
+      .transaction-table {
+        background: white;
+        border-radius: 1rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+
+      .loading {
+        width: 2rem;
+        height: 2rem;
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #3498db;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .transaction-row:hover {
+        background-color: #f9fafb;
+      }
+
+      .filter-card {
+        background: white;
+        border-radius: 1rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50">
+    <!-- Mobile Menu Button -->
+    <button id="mobileMenuBtn" class="mobile-menu-btn lg:hidden">
+      <i class="fas fa-bars text-gray-600"></i>
+    </button>
+
+    <!-- Sidebar Overlay -->
+    <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+    <!-- Sidebar -->
+    <aside
+      id="sidebar"
+      class="w-64 bg-white shadow-lg sidebar-transition fixed h-full"
+    >
+      <div class="p-6">
+        <div class="flex items-center space-x-3">
+          <div
+            class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center"
+          >
+            <i class="fas fa-wallet text-white"></i>
+          </div>
+          <div>
+            <h1 class="text-xl font-bold text-gray-800">SmartSaku</h1>
+            <p class="text-sm text-gray-600">Keuangan Pintar</p>
+          </div>
+        </div>
+      </div>
+
+      <nav class="mt-8">
+        <a
+          href="dashboard.html"
+          class="nav-link flex items-center px-6 py-3 text-gray-700 hover:bg-gray-100"
+        >
+          <i class="fas fa-chart-line mr-3"></i>
+          Dashboard
+        </a>
+        <a
+          href="transaksi.html"
+          class="nav-link active flex items-center px-6 py-3 text-gray-700 hover:bg-gray-100 bg-blue-50 text-blue-600"
+        >
+          <i class="fas fa-exchange-alt mr-3"></i>
+          Transaksi
+        </a>
+        <a
+          href="#"
+          class="nav-link flex items-center px-6 py-3 text-gray-700 hover:bg-gray-100"
+        >
+          <i class="fas fa-file-alt mr-3"></i>
+          Laporan
+        </a>
+        <a
+          href="#"
+          class="nav-link flex items-center px-6 py-3 text-gray-700 hover:bg-gray-100"
+        >
+          <i class="fas fa-cog mr-3"></i>
+          Pengaturan
+        </a>
+      </nav>
+
+      <div class="absolute bottom-0 w-full p-6">
+        <div class="flex items-center space-x-3 p-3 bg-gray-100 rounded-lg">
+          <div
+            class="w-10 h-10 bg-gray-400 rounded-full flex items-center justify-center"
+          >
+            <i class="fas fa-user text-white"></i>
+          </div>
+          <div class="flex-1">
+            <p id="userName" class="text-sm font-medium text-gray-800">
+              Loading...
+            </p>
+            <p class="text-xs text-gray-600">Mahasiswa</p>
+          </div>
+          <button id="logoutBtn" class="text-gray-600 hover:text-red-600">
+            <i class="fas fa-sign-out-alt"></i>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="ml-64 min-h-screen">
+      <div class="p-6">
+        <!-- Header -->
+        <div class="mb-8">
+          <div class="flex items-center justify-between">
+            <div>
+              <h1 class="text-3xl font-bold text-gray-900">
+                Manajemen Transaksi
+              </h1>
+              <p class="text-gray-600">Kelola semua transaksi keuangan Anda</p>
+            </div>
+            <button
+              id="addTransactionBtn"
+              class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center"
+            >
+              <i class="fas fa-plus mr-2"></i>
+              Tambah Transaksi
+            </button>
+          </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <!-- Total Transaksi -->
+          <div class="stats-card">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm font-medium text-gray-600">Total Transaksi</p>
+                <p id="totalTransaksi" class="text-2xl font-bold text-gray-900">
+                  0
+                </p>
+              </div>
+              <div
+                class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"
+              >
+                <i class="fas fa-receipt text-blue-600"></i>
+              </div>
+            </div>
+          </div>
+
+          <!-- Total Pemasukan -->
+          <div class="stats-card">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm font-medium text-gray-600">Total Pemasukan</p>
+                <p
+                  id="totalPemasukan"
+                  class="text-2xl font-bold text-green-600"
+                >
+                  Rp 0
+                </p>
+              </div>
+              <div
+                class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center"
+              >
+                <i class="fas fa-arrow-up text-green-600"></i>
+              </div>
+            </div>
+          </div>
+
+          <!-- Total Pengeluaran -->
+          <div class="stats-card">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm font-medium text-gray-600">
+                  Total Pengeluaran
+                </p>
+                <p
+                  id="totalPengeluaran"
+                  class="text-2xl font-bold text-red-600"
+                >
+                  Rp 0
+                </p>
+              </div>
+              <div
+                class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center"
+              >
+                <i class="fas fa-arrow-down text-red-600"></i>
+              </div>
+            </div>
+          </div>
+
+          <!-- Saldo -->
+          <div class="stats-card">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm font-medium text-gray-600">Saldo</p>
+                <p id="saldoTotal" class="text-2xl font-bold text-gray-900">
+                  Rp 0
+                </p>
+              </div>
+              <div
+                class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center"
+              >
+                <i class="fas fa-wallet text-purple-600"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filter-card">
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Jenis Transaksi</label
+              >
+              <select
+                id="filterJenis"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="">Semua Jenis</option>
+                <option value="pemasukan">Pemasukan</option>
+                <option value="pengeluaran">Pengeluaran</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Kategori</label
+              >
+              <select
+                id="filterKategori"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="">Semua Kategori</option>
+                <!-- Categories will be loaded here -->
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Tanggal Mulai</label
+              >
+              <input
+                type="date"
+                id="filterTanggalMulai"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Tanggal Akhir</label
+              >
+              <input
+                type="date"
+                id="filterTanggalAkhir"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+          </div>
+          <div class="mt-4 flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+              <button
+                id="applyFilter"
+                class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                <i class="fas fa-filter mr-2"></i>Terapkan Filter
+              </button>
+              <button
+                id="resetFilter"
+                class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors"
+              >
+                <i class="fas fa-times mr-2"></i>Reset
+              </button>
+            </div>
+            <div class="flex items-center space-x-2">
+              <input
+                type="text"
+                id="searchTransaction"
+                placeholder="Cari transaksi..."
+                class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+              <button
+                id="searchBtn"
+                class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors"
+              >
+                <i class="fas fa-search"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Transactions Table -->
+        <div class="transaction-table">
+          <div class="p-6">
+            <div class="flex items-center justify-between mb-6">
+              <h3 class="text-lg font-semibold text-gray-900">
+                Daftar Transaksi
+              </h3>
+              <div class="flex items-center space-x-2">
+                <span class="text-sm text-gray-600">Menampilkan</span>
+                <select
+                  id="entriesPerPage"
+                  class="text-sm border-gray-300 rounded px-2 py-1"
+                >
+                  <option value="10">10</option>
+                  <option value="25">25</option>
+                  <option value="50">50</option>
+                  <option value="100">100</option>
+                </select>
+                <span class="text-sm text-gray-600">entri</span>
+              </div>
+            </div>
+
+            <!-- Table -->
+            <div class="overflow-x-auto">
+              <table class="w-full">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th
+                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Tanggal
+                    </th>
+                    <th
+                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Kategori
+                    </th>
+                    <th
+                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Deskripsi
+                    </th>
+                    <th
+                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Jenis
+                    </th>
+                    <th
+                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Nominal
+                    </th>
+                    <th
+                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Aksi
+                    </th>
+                  </tr>
+                </thead>
+                <tbody
+                  id="transactionTableBody"
+                  class="bg-white divide-y divide-gray-200"
+                >
+                  <!-- Transactions will be loaded here -->
+                  <tr>
+                    <td colspan="6" class="px-6 py-12 text-center">
+                      <div class="flex justify-center">
+                        <div class="loading"></div>
+                      </div>
+                      <p class="mt-4 text-gray-500">Memuat transaksi...</p>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="mt-6 flex items-center justify-between">
+              <div class="text-sm text-gray-700">
+                Menampilkan <span id="showingStart">0</span> sampai
+                <span id="showingEnd">0</span> dari
+                <span id="totalEntries">0</span> transaksi
+              </div>
+              <div class="flex items-center space-x-2">
+                <button
+                  id="prevPage"
+                  class="px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <i class="fas fa-chevron-left"></i>
+                </button>
+                <div id="pageNumbers" class="flex items-center space-x-1">
+                  <!-- Page numbers will be loaded here -->
+                </div>
+                <button
+                  id="nextPage"
+                  class="px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <i class="fas fa-chevron-right"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Add/Edit Transaction Modal -->
+    <div
+      id="modalTransaksi"
+      class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50"
+    >
+      <div class="flex items-center justify-center min-h-screen px-4">
+        <div class="bg-white rounded-2xl p-6 w-full max-w-md">
+          <div class="flex items-center justify-between mb-6">
+            <h3 id="modalTitle" class="text-lg font-semibold text-gray-900">
+              Tambah Transaksi
+            </h3>
+            <button
+              id="closeModalBtn"
+              class="text-gray-600 hover:text-gray-800"
+            >
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+
+          <form id="transactionForm" class="space-y-4">
+            <input type="hidden" id="transactionId" name="id" />
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Jenis Transaksi</label
+              >
+              <select
+                id="jenisTransaksi"
+                name="jenis"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                required
+              >
+                <option value="">Pilih Jenis</option>
+                <option value="pemasukan">Pemasukan</option>
+                <option value="pengeluaran">Pengeluaran</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Nominal</label
+              >
+              <input
+                type="number"
+                id="nominalTransaksi"
+                name="nominal"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="0"
+                min="1"
+                required
+              />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Kategori</label
+              >
+              <select
+                id="kategoriTransaksi"
+                name="kategori"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                required
+              >
+                <option value="">Pilih Kategori</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Deskripsi</label
+              >
+              <textarea
+                id="deskripsiTransaksi"
+                name="deskripsi"
+                rows="3"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Deskripsi transaksi (opsional)"
+              ></textarea>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Tanggal</label
+              >
+              <input
+                type="date"
+                id="tanggalTransaksi"
+                name="tanggal"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                required
+              />
+            </div>
+
+            <div class="flex space-x-3 pt-4">
+              <button
+                type="button"
+                id="cancelBtn"
+                class="flex-1 px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
+              >
+                Batal
+              </button>
+              <button
+                type="submit"
+                id="saveBtn"
+                class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Simpan
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div
+      id="deleteModal"
+      class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50"
+    >
+      <div class="flex items-center justify-center min-h-screen px-4">
+        <div class="bg-white rounded-2xl p-6 w-full max-w-sm">
+          <div class="text-center">
+            <div
+              class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4"
+            >
+              <i class="fas fa-trash text-red-600 text-xl"></i>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">
+              Hapus Transaksi
+            </h3>
+            <p class="text-gray-600 mb-6">
+              Apakah Anda yakin ingin menghapus transaksi ini? Tindakan ini
+              tidak dapat dibatalkan.
+            </p>
+            <div class="flex space-x-3">
+              <button
+                id="cancelDeleteBtn"
+                class="flex-1 px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
+              >
+                Batal
+              </button>
+              <button
+                id="confirmDeleteBtn"
+                class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              >
+                Hapus
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="../js/transaksi.js"></script>
+  </body>
+</html>

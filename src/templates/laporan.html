@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Laporan - SmartSaku</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="../css/dashboard.css" />
+    <style>
+      .stats-card {
+        background: white;
+        border-radius: 1rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        padding: 1.5rem;
+      }
+
+      .report-card {
+        background: white;
+        border-radius: 1rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .chart-container {
+        position: relative;
+        height: 400px;
+        width: 100%;
+      }
+
+      .loading {
+        width: 2rem;
+        height: 2rem;
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #3498db;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .export-btn {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        transform: translateY(0);
+      }
+
+      .export-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+      }
+
+      .period-tab {
+        background: white;
+        border: 2px solid #e5e7eb;
+        color: #6b7280;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        cursor: pointer;
+      }
+
+      .period-tab.active {
+        background: #3b82f6;
+        border-color: #3b82f6;
+        color: white;
+      }
+
+      .trend-positive {
+        color: #10b981;
+      }
+
+      .trend-negative {
+        color: #ef4444;
+      }
+
+      .progress-bar {
+        background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+        border-radius: 0.25rem;
+        height: 0.5rem;
+        transition: width 0.8s ease;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50">
+    <!-- Mobile Menu Button -->
+    <button id="mobileMenuBtn" class="mobile-menu-btn lg:hidden">
+      <i class="fas fa-bars text-gray-600"></i>
+    </button>
+
+    <!-- Sidebar Overlay -->
+    <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+    <!-- Sidebar -->
+    <aside
+      id="sidebar"
+      class="w-64 bg-white shadow-lg sidebar-transition fixed h-full"
+    >
+      <div class="p-6">
+        <div class="flex items-center space-x-3">
+          <div
+            class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center"
+          >
+            <i class="fas fa-wallet text-white"></i>
+          </div>
+          <div>
+            <h1 class="text-xl font-bold text-gray-800">SmartSaku</h1>
+            <p class="text-sm text-gray-600">Keuangan Pintar</p>
+          </div>
+        </div>
+      </div>
+
+      <nav class="mt-8">
+        <a
+          href="dashboard.html"
+          class="nav-link flex items-center px-6 py-3 text-gray-700 hover:bg-gray-100"
+        >
+          <i class="fas fa-chart-line mr-3"></i>
+          Dashboard
+        </a>
+        <a
+          href="transaksi.html"
+          class="nav-link flex items-center px-6 py-3 text-gray-700 hover:bg-gray-100"
+        >
+          <i class="fas fa-exchange-alt mr-3"></i>
+          Transaksi
+        </a>
+        <a
+          href="laporan.html"
+          class="nav-link active flex items-center px-6 py-3 text-gray-700 hover:bg-gray-100 bg-blue-50 text-blue-600"
+        >
+          <i class="fas fa-file-alt mr-3"></i>
+          Laporan
+        </a>
+        <a
+          href="pengaturan.html"
+          class="nav-link flex items-center px-6 py-3 text-gray-700 hover:bg-gray-100"
+        >
+          <i class="fas fa-cog mr-3"></i>
+          Pengaturan
+        </a>
+      </nav>
+
+      <div class="absolute bottom-0 w-full p-6">
+        <div class="flex items-center space-x-3 p-3 bg-gray-100 rounded-lg">
+          <div
+            class="w-10 h-10 bg-gray-400 rounded-full flex items-center justify-center"
+          >
+            <i class="fas fa-user text-white"></i>
+          </div>
+          <div class="flex-1">
+            <p id="userName" class="text-sm font-medium text-gray-800">
+              Loading...
+            </p>
+            <p class="text-xs text-gray-600">Mahasiswa</p>
+          </div>
+          <button id="logoutBtn" class="text-gray-600 hover:text-red-600">
+            <i class="fas fa-sign-out-alt"></i>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="ml-64 min-h-screen">
+      <div class="p-6">
+        <!-- Header -->
+        <div class="mb-8">
+          <div class="flex items-center justify-between">
+            <div>
+              <h1 class="text-3xl font-bold text-gray-900">Laporan Keuangan</h1>
+              <p class="text-gray-600">Analisis mendalam keuangan Anda</p>
+            </div>
+            <div class="flex items-center space-x-3">
+              <button id="exportExcelBtn" class="export-btn">
+                <i class="fas fa-file-excel mr-2"></i>
+                Export Excel
+              </button>
+              <button id="exportPdfBtn" class="export-btn">
+                <i class="fas fa-file-pdf mr-2"></i>
+                Export PDF
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Period Selector -->
+        <div class="report-card">
+          <h3 class="text-lg font-semibold text-gray-900 mb-4">
+            Periode Laporan
+          </h3>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <button class="period-tab active" data-period="7">7 Hari</button>
+            <button class="period-tab" data-period="30">30 Hari</button>
+            <button class="period-tab" data-period="90">3 Bulan</button>
+            <button class="period-tab" data-period="365">1 Tahun</button>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Tanggal Mulai</label
+              >
+              <input
+                type="date"
+                id="startDate"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2"
+                >Tanggal Akhir</label
+              >
+              <input
+                type="date"
+                id="endDate"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Summary Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <!-- Total Transaksi -->
+          <div class="stats-card">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <p class="text-sm font-medium text-gray-600">Total Transaksi</p>
+                <p id="totalTransaksi" class="text-2xl font-bold text-gray-900">
+                  0
+                </p>
+              </div>
+              <div
+                class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"
+              >
+                <i class="fas fa-receipt text-blue-600"></i>
+              </div>
+            </div>
+            <div class="flex items-center">
+              <span id="transactionTrend" class="text-sm font-medium">
+                <i class="fas fa-arrow-up mr-1"></i>
+                +0% dari periode sebelumnya
+              </span>
+            </div>
+          </div>
+
+          <!-- Total Pemasukan -->
+          <div class="stats-card">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <p class="text-sm font-medium text-gray-600">Total Pemasukan</p>
+                <p
+                  id="totalPemasukan"
+                  class="text-2xl font-bold text-green-600"
+                >
+                  Rp 0
+                </p>
+              </div>
+              <div
+                class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center"
+              >
+                <i class="fas fa-arrow-up text-green-600"></i>
+              </div>
+            </div>
+            <div class="flex items-center">
+              <span id="incomeTrend" class="text-sm font-medium">
+                <i class="fas fa-arrow-up mr-1"></i>
+                +0% dari periode sebelumnya
+              </span>
+            </div>
+          </div>
+
+          <!-- Total Pengeluaran -->
+          <div class="stats-card">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <p class="text-sm font-medium text-gray-600">
+                  Total Pengeluaran
+                </p>
+                <p
+                  id="totalPengeluaran"
+                  class="text-2xl font-bold text-red-600"
+                >
+                  Rp 0
+                </p>
+              </div>
+              <div
+                class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center"
+              >
+                <i class="fas fa-arrow-down text-red-600"></i>
+              </div>
+            </div>
+            <div class="flex items-center">
+              <span id="expenseTrend" class="text-sm font-medium">
+                <i class="fas fa-arrow-down mr-1"></i>
+                +0% dari periode sebelumnya
+              </span>
+            </div>
+          </div>
+
+          <!-- Net Worth -->
+          <div class="stats-card">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <p class="text-sm font-medium text-gray-600">Net Worth</p>
+                <p id="netWorth" class="text-2xl font-bold text-purple-600">
+                  Rp 0
+                </p>
+              </div>
+              <div
+                class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center"
+              >
+                <i class="fas fa-chart-line text-purple-600"></i>
+              </div>
+            </div>
+            <div class="flex items-center">
+              <span id="netWorthTrend" class="text-sm font-medium">
+                <i class="fas fa-arrow-up mr-1"></i>
+                +0% dari periode sebelumnya
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <!-- Cash Flow Trend -->
+          <div class="report-card">
+            <h3 class="text-lg font-semibold text-gray-900 mb-6">
+              Trend Arus Kas
+            </h3>
+            <div class="chart-container">
+              <canvas id="cashFlowTrendChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Category Breakdown -->
+          <div class="report-card">
+            <h3 class="text-lg font-semibold text-gray-900 mb-6">
+              Distribusi Kategori
+            </h3>
+            <div class="chart-container">
+              <canvas id="categoryBreakdownChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Monthly Comparison -->
+        <div class="report-card">
+          <h3 class="text-lg font-semibold text-gray-900 mb-6">
+            Perbandingan Bulanan
+          </h3>
+          <div class="chart-container">
+            <canvas id="monthlyComparisonChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Category Analysis -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <!-- Top Categories -->
+          <div class="report-card">
+            <h3 class="text-lg font-semibold text-gray-900 mb-6">
+              Kategori Teratas
+            </h3>
+            <div id="topCategories" class="space-y-4">
+              <!-- Top categories will be loaded here -->
+              <div class="flex items-center justify-center py-8">
+                <div class="loading"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Spending Pattern -->
+          <div class="report-card">
+            <h3 class="text-lg font-semibold text-gray-900 mb-6">
+              Pola Pengeluaran
+            </h3>
+            <div id="spendingPattern" class="space-y-4">
+              <!-- Spending pattern will be loaded here -->
+              <div class="flex items-center justify-center py-8">
+                <div class="loading"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Detailed Report Table -->
+        <div class="report-card">
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="text-lg font-semibold text-gray-900">Laporan Detail</h3>
+            <div class="flex items-center space-x-2">
+              <button
+                id="toggleReportView"
+                class="px-4 py-2 text-sm bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+              >
+                <i class="fas fa-table mr-2"></i>Lihat Tabel
+              </button>
+            </div>
+          </div>
+
+          <div id="reportTableContainer" class="hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th
+                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Tanggal
+                    </th>
+                    <th
+                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Kategori
+                    </th>
+                    <th
+                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Deskripsi
+                    </th>
+                    <th
+                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Jenis
+                    </th>
+                    <th
+                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Nominal
+                    </th>
+                  </tr>
+                </thead>
+                <tbody
+                  id="reportTableBody"
+                  class="bg-white divide-y divide-gray-200"
+                >
+                  <!-- Report data will be loaded here -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Summary Cards View -->
+          <div id="reportCardsContainer">
+            <div
+              id="reportCards"
+              class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+            >
+              <!-- Report cards will be loaded here -->
+              <div class="flex items-center justify-center py-8 col-span-full">
+                <div class="loading"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script type="module" src="../js/laporan.js"></script>
+  </body>
+</html>
