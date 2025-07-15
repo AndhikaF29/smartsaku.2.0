@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from 'https://cdn.skypack.dev/@supabase/supabase-js';
 
 // Supabase configuration - replace with your actual values
 const supabaseUrl = 'https://wkanwzqxmhqqfcwjgtdb.supabase.co'

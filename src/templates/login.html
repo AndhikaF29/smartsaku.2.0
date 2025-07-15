@@ -38,7 +38,7 @@
       <div class="max-w-md w-full space-y-8">
         <!-- Header -->
         <div class="text-center">
-          <a href="/SmartSaku/" class="inline-block">
+          <a href="/" class="inline-block">
             <h1
               class="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent"
             >
@@ -51,7 +51,7 @@
           <p class="mt-2 text-sm text-gray-600">
             Belum punya akun?
             <a
-              href="/src/templates/register.html"
+              href="./register.html"
               class="font-medium text-primary hover:text-secondary transition-colors"
             >
               Daftar di sini
@@ -177,12 +177,12 @@
 
     <!-- Script -->
     <script type="module">
-      import AuthController from "/SmartSaku/src/services/AuthController.js";
+      import AuthController from "../services/AuthController.js";
       import {
         NotifikasiUtil,
         ValidasiUtil,
         LoadingUtil,
-      } from "/SmartSaku/src/utils/helpers.js";
+      } from "../utils/helpers.js";
 
       class LoginController {
         constructor() {
@@ -230,8 +230,7 @@
                   "Anda sudah login, mengalihkan ke dashboard..."
                 );
                 setTimeout(() => {
-                  window.location.href =
-                    "/SmartSaku/src/templates/dashboard.html";
+                  window.location.href = "/dashboard";
                 }, 2000);
               }
             }
@@ -273,8 +272,7 @@
               );
 
               setTimeout(() => {
-                window.location.href =
-                  "/SmartSaku/src/templates/dashboard.html";
+                window.location.href = "./dashboard.html";
               }, 2000);
             }
           } catch (error) {
