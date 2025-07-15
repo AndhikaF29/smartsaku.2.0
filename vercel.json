@@ -30,7 +30,7 @@
       "destination": "/src/templates/login.html"
     },
     {
-      "source": "/register", 
+      "source": "/register",
       "destination": "/src/templates/register.html"
     },
     {
