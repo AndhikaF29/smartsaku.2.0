@@ -1,16 +1,6 @@
 {
   "version": 2,
-  "public": true,
-  "functions": {
-    "src/api/**/*.js": {
-      "runtime": "@vercel/node@18"
-    }
-  },
   "rewrites": [
-    {
-      "source": "/api/(.*)",
-      "destination": "/src/api/$1"
-    },
     {
       "source": "/",
       "destination": "/index.html"
@@ -38,25 +28,6 @@
     {
       "source": "/transaksi",
       "destination": "/src/templates/transaksi.html"
-    }
-  ],
-  "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-        {
-          "key": "Access-Control-Allow-Origin",
-          "value": "*"
-        },
-        {
-          "key": "Access-Control-Allow-Methods",
-          "value": "GET, POST, PUT, DELETE, OPTIONS"
-        },
-        {
-          "key": "Access-Control-Allow-Headers",
-          "value": "Content-Type, Authorization"
-        }
-      ]
     }
   ]
 }
