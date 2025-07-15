@@ -1,0 +1,68 @@
+{
+  "version": 2,
+  "public": true,
+  "functions": {
+    "src/api/**/*.js": {
+      "runtime": "@vercel/node"
+    }
+  },
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/src/api/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/$1"
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/home",
+      "destination": "/src/templates/home.html"
+    },
+    {
+      "source": "/login",
+      "destination": "/src/templates/login.html"
+    },
+    {
+      "source": "/register", 
+      "destination": "/src/templates/register.html"
+    },
+    {
+      "source": "/dashboard",
+      "destination": "/src/templates/dashboard.html"
+    },
+    {
+      "source": "/chat",
+      "destination": "/src/templates/chat.html"
+    },
+    {
+      "source": "/transaksi",
+      "destination": "/src/templates/transaksi.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, POST, PUT, DELETE, OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "Content-Type, Authorization"
+        }
+      ]
+    }
+  ]
+}

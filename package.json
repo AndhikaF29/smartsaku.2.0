@@ -1,42 +1,27 @@
 {
   "name": "smartsaku",
-  "homepage": "https://davneyrestradanaz.github.io/SmartSaku/",
-  "private": true,
-  "version": "0.0.0",
-  "type": "module",
-  "description": "SmartSaku - Aplikasi pengelolaan keuangan cerdas",
+  "version": "1.0.0",
+  "description": "Aplikasi Keuangan Pintar dengan AI",
+  "main": "index.html",
   "scripts": {
-    "dev": "vite --port 3001",
-    "build": "vite build",
-    "preview": "vite preview",
-    "start": "node server.js",
-    "verify": "node verify-paths.js",
-    "predeploy": "npm run verify && npm run build && node deploy.js",
-    "deploy": "gh-pages -d dist"
+    "dev": "serve .",
+    "build": "echo 'Static site - no build needed'",
+    "start": "serve .",
+    "preview": "serve ."
   },
   "keywords": [
-    "smartsaku",
     "finance",
     "ai",
-    "vite"
+    "budgeting",
+    "personal-finance",
+    "supabase"
   ],
   "author": "SmartSaku Team",
-  "license": "ISC",
-  "dependencies": {
-    "@supabase/supabase-js": "^2.39.0",
-    "chart.js": "^4.4.9",
-    "express": "^4.18.2"
-  },
+  "license": "MIT",
   "devDependencies": {
-    "@ljharb/tsconfig": "^0.3.2",
-    "@vitejs/plugin-react": "^4.5.2",
-    "autoprefixer": "^10.4.16",
-    "fs": "^0.0.1-security",
-    "gh-pages": "^6.3.0",
-    "path": "^0.12.7",
-    "postcss": "^8.4.31",
-    "tailwindcss": "^3.4.1",
-    "terser": "^5.39.2",
-    "vite": "^6.3.5"
+    "serve": "^14.2.1"
+  },
+  "engines": {
+    "node": ">=16.0.0"
   }
 }

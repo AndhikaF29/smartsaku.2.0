@@ -3,23 +3,425 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SmartSaku - Aplikasi Keuangan Pintar</title>
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>SmartSaku - Kelola Keuangan dengan Cerdas</title>
+    <meta
+      name="description"
+      content="SmartSaku membantu Anda mengelola keuangan dengan mudah dan cerdas menggunakan teknologi AI terdepan"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
     <script>
-      // Redirect to home page
-      window.location.href = "./src/templates/home.html";
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "#1E40AF",
+              secondary: "#3B82F6",
+              accent: "#60A5FA",
+              light: "#F8FAFC",
+            },
+          },
+        },
+      };
     </script>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+      /* Custom animations */
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateY(0px);
+        }
+        50% {
+          transform: translateY(-20px);
+        }
+      }
+      @keyframes pulse-slow {
+        0%,
+        100% {
+          opacity: 0.8;
+        }
+        50% {
+          opacity: 1;
+        }
+      }
+      .animate-float {
+        animation: float 6s ease-in-out infinite;
+      }
+      .animate-pulse-slow {
+        animation: pulse-slow 3s ease-in-out infinite;
+      }
+      .text-gradient {
+        background: linear-gradient(45deg, #1e40af, #3b82f6);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+    </style>
   </head>
-  <body>
-    <div id="app">
-      <div class="container">
-        <div class="text-center mt-20">
-          <h1>SmartSaku</h1>
-          <p>Aplikasi Keuangan Pintar</p>
-          <div class="loading"></div>
-          <p>Mengalihkan ke halaman utama...</p>
+  <body
+    class="bg-gradient-to-br from-light via-white to-blue-50 min-h-screen font-inter"
+  >
+    <!-- Animated Background Elements -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none">
+      <div
+        class="absolute top-1/4 left-1/4 w-64 h-64 bg-primary rounded-full opacity-10 blur-3xl animate-float"
+      ></div>
+      <div
+        class="absolute top-3/4 right-1/4 w-96 h-96 bg-accent rounded-full opacity-5 blur-3xl animate-float"
+        style="animation-delay: -3s"
+      ></div>
+      <div
+        class="absolute top-1/2 left-3/4 w-48 h-48 bg-secondary rounded-full opacity-15 blur-2xl animate-float"
+        style="animation-delay: -1.5s"
+      ></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav
+      class="bg-white/80 backdrop-blur-lg shadow-lg fixed w-full z-50 border-b border-primary/20"
+    >
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16">
+          <div class="flex items-center">
+            <a
+              href="/"
+              class="text-2xl font-bold text-primary hover:text-secondary transition-colors duration-300"
+            >
+              <span
+                class="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent"
+                >SmartSaku</span
+              >
+            </a>
+          </div>
+          <div class="hidden md:flex items-center space-x-8">
+            <a
+              href="./src/templates/login.html"
+              class="text-gray-700 hover:text-primary transition duration-300 font-medium"
+              >Masuk</a
+            >
+            <a
+              href="./src/templates/register.html"
+              class="bg-gradient-to-r from-primary to-secondary text-white px-6 py-2 rounded-full hover:shadow-lg hover:shadow-primary/25 transform hover:-translate-y-0.5 transition-all duration-300"
+            >
+              Daftar
+            </a>
+          </div>
+          <div class="md:hidden flex items-center">
+            <button class="mobile-menu-button text-gray-700 hover:text-primary">
+              <svg
+                class="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M4 6h16M4 12h16M4 18h16"
+                ></path>
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+      <!-- Mobile menu -->
+      <div class="mobile-menu hidden md:hidden">
+        <div
+          class="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white/90 backdrop-blur-lg shadow-lg"
+        >
+          <a
+            href="./src/templates/login.html"
+            class="block px-3 py-2 text-gray-700 hover:text-primary"
+            >Masuk</a
+          >
+          <a
+            href="./src/templates/register.html"
+            class="block px-3 py-2 text-gray-700 hover:text-primary"
+            >Daftar</a
+          >
+        </div>
+      </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <main class="pt-20">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <div class="grid md:grid-cols-2 gap-12 items-center">
+          <div class="space-y-8">
+            <div class="space-y-6">
+              <div class="inline-block">
+                <span
+                  class="bg-gradient-to-r from-primary to-secondary text-white px-4 py-2 rounded-full text-sm font-semibold animate-pulse-slow"
+                >
+                  🚀 Teknologi AI Terdepan
+                </span>
+              </div>
+              <h1
+                class="text-5xl md:text-7xl font-bold text-gray-900 leading-tight"
+              >
+                Kelola Keuangan Anda dengan
+                <span
+                  class="bg-gradient-to-r from-primary to-secondary text-transparent bg-clip-text"
+                >
+                  Lebih Pintar
+                </span>
+              </h1>
+              <p class="text-xl text-gray-600 leading-relaxed">
+                SmartSaku membantu Anda mengelola keuangan dengan mudah dan
+                cerdas menggunakan teknologi AI terdepan. Dapatkan insight
+                mendalam tentang pola pengeluaran dan tips penghematan yang
+                personal.
+              </p>
+            </div>
+            <div class="flex flex-col sm:flex-row gap-4">
+              <a
+                href="./src/templates/register.html"
+                class="group bg-gradient-to-r from-primary to-secondary text-white px-8 py-4 rounded-full text-lg font-semibold hover:shadow-xl hover:shadow-primary/25 transform hover:-translate-y-1 transition-all duration-300 text-center"
+              >
+                <span class="flex items-center justify-center">
+                  Mulai Sekarang
+                  <svg
+                    class="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-300"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M13 7l5 5m0 0l-5 5m5-5H6"
+                    ></path>
+                  </svg>
+                </span>
+              </a>
+              <a
+                href="#features"
+                class="group border-2 border-primary text-primary px-8 py-4 rounded-full text-lg font-semibold hover:bg-primary hover:text-white transition-all duration-300 text-center"
+              >
+                <span class="flex items-center justify-center">
+                  Pelajari Lebih Lanjut
+                  <svg
+                    class="w-5 h-5 ml-2 group-hover:translate-y-1 transition-transform duration-300"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 14l-7 7m0 0l-7-7m7 7V3"
+                    ></path>
+                  </svg>
+                </span>
+              </a>
+            </div>
+            <!-- Stats -->
+            <div class="grid grid-cols-3 gap-6 pt-8">
+              <div class="text-center">
+                <div class="text-3xl font-bold text-primary">10K+</div>
+                <div class="text-gray-600">Pengguna Aktif</div>
+              </div>
+              <div class="text-center">
+                <div class="text-3xl font-bold text-primary">95%</div>
+                <div class="text-gray-600">Kepuasan User</div>
+              </div>
+              <div class="text-center">
+                <div class="text-3xl font-bold text-primary">24/7</div>
+                <div class="text-gray-600">Dukungan AI</div>
+              </div>
+            </div>
+          </div>
+          <div class="relative">
+            <div
+              class="absolute inset-0 bg-gradient-to-r from-primary via-secondary to-accent rounded-full opacity-20 blur-3xl animate-pulse-slow"
+            ></div>
+            <div
+              class="absolute inset-0 bg-gradient-to-r from-primary to-accent rounded-full opacity-10 blur-2xl animate-float"
+            ></div>
+            <!-- Modern Dashboard Preview -->
+            <div
+              class="relative z-10 bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl border border-white/30 p-6"
+            >
+              <div
+                class="bg-gradient-to-r from-primary to-secondary rounded-2xl p-6 text-white mb-6"
+              >
+                <div class="flex items-center justify-between">
+                  <div>
+                    <h3 class="text-lg font-semibold">Saldo Total</h3>
+                    <p class="text-3xl font-bold">Rp 15.750.000</p>
+                  </div>
+                  <div
+                    class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center"
+                  >
+                    <svg
+                      class="w-6 h-6 text-white"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"
+                      ></path>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-2 gap-4 mb-6">
+                <div class="bg-green-50 rounded-xl p-4">
+                  <div class="flex items-center space-x-3">
+                    <div
+                      class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center"
+                    >
+                      <svg
+                        class="w-5 h-5 text-green-600"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M7 11l5-5m0 0l5 5m-5-5v12"
+                        ></path>
+                      </svg>
+                    </div>
+                    <div>
+                      <p class="text-sm text-gray-600">Pemasukan</p>
+                      <p class="font-semibold text-green-600">Rp 8.500.000</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="bg-red-50 rounded-xl p-4">
+                  <div class="flex items-center space-x-3">
+                    <div
+                      class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center"
+                    >
+                      <svg
+                        class="w-5 h-5 text-red-600"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M17 13l-5 5m0 0l-5-5m5 5V6"
+                        ></path>
+                      </svg>
+                    </div>
+                    <div>
+                      <p class="text-sm text-gray-600">Pengeluaran</p>
+                      <p class="font-semibold text-red-600">Rp 3.250.000</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Mini Chart Preview -->
+              <div class="bg-gray-50 rounded-xl p-4">
+                <h4 class="text-sm font-medium text-gray-700 mb-3">
+                  Trend Keuangan 7 Hari
+                </h4>
+                <div class="flex items-end space-x-2 h-20">
+                  <div
+                    class="bg-primary w-4 h-12 rounded-t-sm opacity-70"
+                  ></div>
+                  <div
+                    class="bg-primary w-4 h-16 rounded-t-sm opacity-80"
+                  ></div>
+                  <div class="bg-primary w-4 h-20 rounded-t-sm"></div>
+                  <div
+                    class="bg-primary w-4 h-14 rounded-t-sm opacity-75"
+                  ></div>
+                  <div
+                    class="bg-primary w-4 h-18 rounded-t-sm opacity-90"
+                  ></div>
+                  <div
+                    class="bg-primary w-4 h-16 rounded-t-sm opacity-80"
+                  ></div>
+                  <div
+                    class="bg-primary w-4 h-19 rounded-t-sm opacity-95"
+                  ></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-16">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid md:grid-cols-4 gap-8 mb-8">
+          <div class="col-span-1 md:col-span-2">
+            <h3 class="text-2xl font-bold mb-4">
+              <span
+                class="bg-gradient-to-r from-primary to-secondary text-transparent bg-clip-text"
+              >
+                SmartSaku
+              </span>
+            </h3>
+            <p class="text-gray-400 mb-6 max-w-md">
+              Platform pengelolaan keuangan cerdas yang membantu Anda mencapai
+              tujuan finansial dengan teknologi AI terdepan.
+            </p>
+          </div>
+        </div>
+
+        <div class="border-t border-gray-800 pt-8 text-center text-gray-400">
+          <p>
+            &copy; 2024 SmartSaku. All rights reserved. Made with ❤️ for
+            better financial future.
+          </p>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      // Mobile Menu Toggle
+      document.addEventListener("DOMContentLoaded", function () {
+        const mobileMenuButton = document.querySelector(".mobile-menu-button");
+        const mobileMenu = document.querySelector(".mobile-menu");
+
+        if (mobileMenuButton && mobileMenu) {
+          mobileMenuButton.addEventListener("click", function () {
+            mobileMenu.classList.toggle("hidden");
+          });
+        }
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+          anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute("href"));
+            if (target) {
+              target.scrollIntoView({
+                behavior: "smooth",
+                block: "start",
+              });
+            }
+          });
+        });
+      });
+    </script>
   </body>
 </html>
