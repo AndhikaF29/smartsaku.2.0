@@ -24,7 +24,7 @@ class DashboardManager {
         try {
             await this.checkAuth();
             await this.loadTransactions();
-            
+
             // Load categories with validation
             try {
                 await this.loadCategories();
@@ -99,10 +99,10 @@ class DashboardManager {
     async loadTransactions() {
         try {
             console.log('Loading transactions for user:', this.currentUser.id);
-            
+
             // Get transactions from database via TransactionService
             this.transactions = await TransactionService.getUserTransactions(this.currentUser.id);
-            
+
             this.recentTransactions = this.transactions
                 .sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal))
                 .slice(0, 5);
@@ -132,7 +132,7 @@ class DashboardManager {
             console.log('Financial summary loaded:', this.financialSummary);
         } catch (error) {
             console.error('Error calculating financial summary:', error);
-            
+
             // Fallback to manual calculation if service fails
             try {
                 let totalPemasukan = 0;
@@ -149,11 +149,11 @@ class DashboardManager {
                 // Update current month transactions
                 const currentMonth = new Date().getMonth();
                 const currentYear = new Date().getFullYear();
-                
+
                 const monthlyTransactions = this.transactions.filter(transaction => {
                     const transactionDate = new Date(transaction.tanggal);
-                    return transactionDate.getMonth() === currentMonth && 
-                           transactionDate.getFullYear() === currentYear;
+                    return transactionDate.getMonth() === currentMonth &&
+                        transactionDate.getFullYear() === currentYear;
                 }).length;
 
                 this.financialSummary = {
@@ -162,7 +162,7 @@ class DashboardManager {
                     totalPengeluaran: totalPengeluaran,
                     totalTransaksi: monthlyTransactions
                 };
-                
+
                 console.log('Financial summary calculated manually:', this.financialSummary);
             } catch (fallbackError) {
                 console.error('Fallback calculation also failed:', fallbackError);
@@ -351,7 +351,7 @@ class DashboardManager {
             // Default values if CategoryService fails
             let icon = '💸';
             let color = '#6b7280';
-            
+
             try {
                 const categoryDisplay = CategoryService.getCategoryDisplay(transaction.kategori);
                 if (categoryDisplay) {
@@ -585,7 +585,7 @@ class DashboardManager {
     renderCategoryDetails() {
         const container = document.getElementById('categoryDetails');
         if (!container) return;
-        
+
         const categoryData = this.prepareCategoryData();
 
         if (categoryData.labels.length === 0) {
@@ -603,11 +603,11 @@ class DashboardManager {
         container.innerHTML = categoryData.labels.map((category, index) => {
             const amount = categoryData.values[index];
             const percentage = ((amount / total) * 100).toFixed(1);
-            
+
             // Default values if CategoryService fails
             let icon = '💸';
             let color = '#6b7280';
-            
+
             try {
                 const categoryDisplay = CategoryService.getCategoryDisplay(category);
                 if (categoryDisplay) {
@@ -657,14 +657,14 @@ class DashboardManager {
         // Add validation and debugging for kategori selection
         const jenisTransaksiSelect = document.getElementById('jenisTransaksi');
         const kategoriSelect = document.getElementById('kategoriTransaksi');
-        
+
         if (jenisTransaksiSelect && kategoriSelect) {
             // Debug log when jenis changes
             jenisTransaksiSelect.addEventListener('change', (e) => {
                 const selectedType = e.target.value;
                 console.log('Jenis changed to:', selectedType);
                 this.updateCategoriesByType(selectedType);
-                
+
                 // Validate categories are visible
                 setTimeout(() => {
                     const visibleOptions = Array.from(kategoriSelect.options)
@@ -723,7 +723,7 @@ class DashboardManager {
 
     formatCurrencyInput(input) {
         let value = input.value.replace(/[^\d]/g, ''); // Remove all non-digits
-        
+
         if (value === '') {
             input.value = '';
             return;
@@ -750,13 +750,13 @@ class DashboardManager {
         try {
             // Try using CategoryService
             const categories = CategoryService.getCategoriesByType(type);
-            
+
             if (Array.isArray(categories) && categories.length > 0) {
                 // Clear current options except first
                 while (categorySelect.children.length > 1) {
                     categorySelect.removeChild(categorySelect.lastChild);
                 }
-    
+
                 // Add new options
                 categories.forEach(category => {
                     const option = document.createElement('option');
@@ -777,7 +777,7 @@ class DashboardManager {
     filterCategoriesByType(type) {
         const categorySelect = document.getElementById('kategoriTransaksi');
         if (!categorySelect) return;
-        
+
         // Show/hide options based on type
         Array.from(categorySelect.options).forEach(option => {
             if (option.value === '') {
@@ -810,18 +810,18 @@ class DashboardManager {
     openTransactionModal() {
         const modal = document.getElementById('modalTransaksi');
         const form = document.getElementById('transactionForm');
-        
+
         if (!modal || !form) return;
-        
+
         form.reset();
         const dateInput = document.getElementById('tanggalTransaksi');
         if (dateInput) {
             dateInput.value = new Date().toISOString().split('T')[0];
         }
-        
+
         // Load all categories initially
         this.loadAllCategories();
-        
+
         modal.classList.remove('hidden');
     }
 
@@ -873,19 +873,19 @@ class DashboardManager {
 
     async handleTransactionSubmit(e) {
         e.preventDefault();
-        
+
         const formData = new FormData(e.target);
-        
+
         // Check if using input field with currency formatting
         const nominalInput = document.getElementById('nominalTransaksi');
         let nominalValue;
-        
+
         if (nominalInput && nominalInput.type === 'text') {
             nominalValue = this.parseCurrencyInput(nominalInput.value);
         } else {
             nominalValue = parseFloat(formData.get('nominal'));
         }
-        
+
         // Validation
         if (isNaN(nominalValue) || nominalValue <= 0) {
             this.showError('Nominal harus lebih dari 0');
@@ -912,14 +912,14 @@ class DashboardManager {
         };
 
         console.log('Saving transaction to Supabase:', transactionData);
-        
+
         try {
             const savedTransaction = await TransactionService.createTransaction(transactionData);
             console.log('Transaction saved successfully:', savedTransaction);
-            
+
             this.showSuccess('Transaksi berhasil ditambahkan');
             this.closeTransactionModal();
-            
+
             // Reload data and update dashboard
             await this.loadTransactions();
             await this.calculateFinancialSummary();
@@ -927,19 +927,19 @@ class DashboardManager {
             this.renderDashboard();
         } catch (error) {
             console.error('Error saving transaction:', error);
-            
+
             let errorMessage = 'Gagal menyimpan transaksi';
-            
+
             if (error.message) {
                 errorMessage += ': ' + error.message;
             }
-            
+
             if (error.code === '23514') {
                 errorMessage = 'Nominal transaksi harus lebih dari 0';
             } else if (error.code === '23503') {
                 errorMessage = 'User ID tidak valid';
             }
-            
+
             this.showError(errorMessage);
         }
     }

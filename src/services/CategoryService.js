@@ -29,14 +29,14 @@ class CategoryService {
 
     static getCategoryDisplay(categoryName) {
         const defaultDisplay = { icon: '💸', color: '#6b7280' };
-        
+
         if (this.categories[categoryName]) {
             return {
                 icon: this.categories[categoryName].icon,
                 color: this.categories[categoryName].color
             };
         }
-        
+
         return defaultDisplay;
     }
 
@@ -44,7 +44,7 @@ class CategoryService {
         if (!type || type === '') {
             return this.getAllCategories();
         }
-        
+
         const filteredCategories = Object.entries(this.categories)
             .filter(([_, data]) => data.type === type || data.type === 'both')
             .map(([nama, data]) => ({
@@ -53,7 +53,7 @@ class CategoryService {
                 color: data.color,
                 type: data.type
             }));
-            
+
         return filteredCategories;
     }
 }

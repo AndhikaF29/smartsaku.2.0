@@ -27,7 +27,7 @@ class TransactionService {
             if (transactionData.id) {
                 delete transactionData.id;
             }
-            
+
             // Convert nominal to numeric if it's not
             if (typeof transactionData.nominal !== 'number') {
                 transactionData.nominal = parseFloat(transactionData.nominal);
@@ -77,7 +77,7 @@ class TransactionService {
             // Calculate totals
             let totalPemasukan = 0;
             let totalPengeluaran = 0;
-            
+
             (transactions || []).forEach(transaction => {
                 if (transaction.jenis === 'pemasukan') {
                     totalPemasukan += parseFloat(transaction.nominal);
