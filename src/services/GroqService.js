@@ -169,7 +169,7 @@ ${context ? 'Berikut konteks data keuangan pengguna yang mungkin relevan: ' + co
             `,
 
             default: `
-                <p>Maaf, saat ini saya dalam mode offline dan hanya bisa memberikan informasi dasar tentang keuangan.</p>
+                <p>Maaf, saat ini saya dalam model pengembangan dan hanya bisa memberikan informasi dasar tentang keuangan.</p>
                 <p class="mt-2">Beberapa topik yang bisa saya bantu:</p>
                 <ul class="ml-5 mt-2">
                     <li>Tips mengatur budget</li>
