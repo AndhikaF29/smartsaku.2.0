@@ -178,7 +178,7 @@ ${context ? 'Berikut konteks data keuangan pengguna yang mungkin relevan: ' + co
                     <li>Informasi dasar investasi</li>
                     <li>Fitur-fitur SmartSaku</li>
                 </ul>
-                <p class="mt-2">Untuk analisis data keuangan personal, silakan coba lagi nanti saat layanan online tersedia.</p>
+                <p class="mt-2">Untuk analisis data keuangan personal, silakan coba lagi nanti saat model telah sempurna.</p>
             `
         };
 
