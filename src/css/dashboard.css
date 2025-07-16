@@ -131,7 +131,12 @@
   align-items: center;
   gap: 1rem;
 }
-
+.gradient-text {
+        background: linear-gradient(135deg, #3b82f6, #06b6d4);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
 /* Stats Cards */
 .stats-card {
   background: linear-gradient(135deg, #2563eb 0%, #f8fafc 100%);

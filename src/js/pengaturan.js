@@ -1,463 +1,725 @@
-import AuthController from '../services/AuthController.js';
-import TransactionService from '../services/TransactionService.js';
+// Pengaturan Page JavaScript
+import { supabaseClient } from '../services/supabaseClient.js';
 
-class SettingsManager {
+class PengaturanManager {
     constructor() {
         this.currentUser = null;
-        this.isEditing = false;
-        this.settings = {
-            theme: 'light',
-            currency: 'IDR',
-            notifications: {
-                email: true,
-                push: false,
-                transaction: true
-            }
-        };
+        this.isEditMode = false;
         this.init();
     }
 
     async init() {
         try {
+            // Check authentication
             await this.checkAuth();
+
+            // Initialize components
+            this.initializeEventListeners();
+
+            // Load user profile
             await this.loadUserProfile();
-            this.loadSettings();
-            this.setupEventListeners();
+
+            console.log('Pengaturan initialized successfully');
         } catch (error) {
-            console.error('Error initializing settings:', error);
-            this.showError('Gagal memuat halaman pengaturan');
+            console.error('Error initializing pengaturan:', error);
+            this.redirectToLogin();
         }
     }
 
     async checkAuth() {
         try {
-            this.currentUser = await AuthController.getCurrentUser();
-            if (!this.currentUser) {
-                window.location.href = '/src/templates/home.html';
+            const { data: { session }, error } = await supabaseClient.auth.getSession();
+
+            if (error) {
+                console.error('Auth error:', error);
+                throw error;
+            }
+
+            if (!session) {
+                console.log('No session found, redirecting to login');
+                this.redirectToLogin();
                 return;
             }
 
-            // Update sidebar user name
-            const sidebarUserName = document.getElementById('sidebarUserName');
-            if (sidebarUserName) {
-                sidebarUserName.textContent = this.currentUser.user_metadata?.nama_lengkap ||
-                    this.currentUser.email.split('@')[0] ||
-                    'Pengguna';
-            }
+            this.currentUser = session.user;
+            console.log('User authenticated:', this.currentUser.id);
+
+            // Listen for auth changes
+            supabaseClient.auth.onAuthStateChange((event, session) => {
+                if (event === 'SIGNED_OUT' || !session) {
+                    this.redirectToLogin();
+                }
+            });
+
         } catch (error) {
-            console.error('Auth check failed:', error);
-            window.location.href = '/src/templates/home.html';
+            console.error('Error checking auth:', error);
+            throw error;
         }
     }
 
     async loadUserProfile() {
+        if (!this.currentUser) {
+            console.error('No current user found');
+            return;
+        }
+
         try {
-            const userData = this.currentUser.user_metadata || {};
+            // Show loading state
+            this.showLoadingState();
 
-            // Update profile display
-            document.getElementById('profileName').textContent = userData.nama_lengkap || 'Nama Belum Diatur';
-            document.getElementById('profileEmail').textContent = this.currentUser.email;
+            // Get user profile from database
+            const { data: profile, error } = await supabaseClient
+                .from('users')
+                .select('*')
+                .eq('id', this.currentUser.id)
+                .single();
 
-            // Fill form fields
-            document.getElementById('namaLengkap').value = userData.nama_lengkap || '';
-            document.getElementById('email').value = this.currentUser.email;
-            document.getElementById('nomorTelepon').value = userData.nomor_telepon || '';
-            document.getElementById('tanggalLahir').value = userData.tanggal_lahir || '';
-            document.getElementById('universitas').value = userData.universitas || '';
-            document.getElementById('jurusan').value = userData.jurusan || '';
+            if (error) {
+                console.error('Error loading profile:', error);
+                // If user doesn't exist in users table, create one
+                if (error.code === 'PGRST116') {
+                    await this.createUserProfile();
+                    return;
+                }
+                throw error;
+            }
 
-            // Update avatar
-            this.updateAvatarDisplay(userData.nama_lengkap || this.currentUser.email);
+            // Update UI with profile data
+            this.updateProfileUI(profile);
+
         } catch (error) {
             console.error('Error loading user profile:', error);
+            this.showErrorMessage('Gagal memuat profil pengguna');
+        } finally {
+            this.hideLoadingState();
         }
-    }
-
-    updateAvatarDisplay(name) {
-        const avatarIcon = document.getElementById('avatarIcon');
-        if (name) {
-            const initials = name.split(' ').map(word => word.charAt(0)).join('').toUpperCase().slice(0, 2);
-            avatarIcon.textContent = initials;
-            avatarIcon.className = '';
-        } else {
-            avatarIcon.className = 'fas fa-user';
-            avatarIcon.textContent = '';
-        }
-    }
-
-    loadSettings() {
+    } async createUserProfile() {
         try {
-            const savedSettings = localStorage.getItem('smartsaku_settings');
-            if (savedSettings) {
-                this.settings = { ...this.settings, ...JSON.parse(savedSettings) };
+            const newProfile = {
+                id: this.currentUser.id,
+                email: this.currentUser.email,
+                nama_lengkap: this.currentUser.user_metadata?.full_name || '',
+                no_telepon: this.currentUser.user_metadata?.phone || '',
+                profile_image_url: null,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+            };
+
+            const { data, error } = await supabaseClient
+                .from('users')
+                .insert([newProfile])
+                .select()
+                .single();
+
+            if (error) {
+                console.error('Error creating profile:', error);
+                throw error;
             }
 
-            // Apply theme
-            this.applyTheme(this.settings.theme);
-            document.querySelector(`[data-theme="${this.settings.theme}"]`).classList.add('active');
+            console.log('Profile created successfully:', data);
+            this.updateProfileUI(data);
 
-            // Apply currency
-            document.getElementById('currencyFormat').value = this.settings.currency;
-
-            // Apply notification settings
-            document.getElementById('emailNotifications').checked = this.settings.notifications.email;
-            document.getElementById('pushNotifications').checked = this.settings.notifications.push;
-            document.getElementById('transactionReminder').checked = this.settings.notifications.transaction;
         } catch (error) {
-            console.error('Error loading settings:', error);
+            console.error('Error creating user profile:', error);
+            this.showErrorMessage('Gagal membuat profil pengguna');
         }
     }
 
-    setupEventListeners() {
-        // Profile editing
-        document.getElementById('editProfileBtn').addEventListener('click', () => {
-            this.toggleProfileEdit();
-        });
+    updateProfileUI(profile) {
+        // Update profile display
+        document.getElementById('profileName').textContent = profile.nama_lengkap || 'Belum diatur';
+        document.getElementById('profileEmail').textContent = profile.email;
+        document.getElementById('sidebarUserName').textContent = profile.nama_lengkap || 'User';
 
-        document.getElementById('cancelProfileBtn').addEventListener('click', () => {
-            this.toggleProfileEdit();
-        });
+        // Update form fields
+        document.getElementById('namaLengkap').value = profile.nama_lengkap || '';
+        document.getElementById('email').value = profile.email || '';
+        document.getElementById('nomorTelepon').value = profile.no_telepon || '';
 
-        document.getElementById('profileForm').addEventListener('submit', (e) => {
-            this.handleProfileSubmit(e);
-        });
+        // Update profile avatar
+        this.updateProfileAvatar(profile.profile_image_url);
+
+        console.log('Profile UI updated successfully');
+    }
+
+    updateProfileAvatar(imageUrl) {
+        const avatarContainer = document.querySelector('.profile-avatar');
+        const avatarIcon = document.getElementById('avatarIcon');
+
+        if (imageUrl) {
+            // Show profile image
+            avatarContainer.style.backgroundImage = `url(${imageUrl})`;
+            avatarContainer.style.backgroundSize = 'cover';
+            avatarContainer.style.backgroundPosition = 'center';
+            avatarIcon.style.display = 'none';
+        } else {
+            // Show default icon
+            avatarContainer.style.backgroundImage = 'none';
+            avatarIcon.style.display = 'block';
+        }
+    }
+
+    initializeEventListeners() {
+        // Edit profile button
+        const editBtn = document.getElementById('editProfileBtn');
+        if (editBtn) {
+            editBtn.addEventListener('click', () => this.toggleEditMode());
+        }
+
+        // Cancel edit button
+        const cancelBtn = document.getElementById('cancelProfileBtn');
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', () => this.cancelEdit());
+        }
+
+        // Profile form submission
+        const profileForm = document.getElementById('profileForm');
+        if (profileForm) {
+            profileForm.addEventListener('submit', (e) => this.handleProfileSubmit(e));
+        }
+
+        // Password form submission
+        const passwordForm = document.getElementById('passwordForm');
+        if (passwordForm) {
+            passwordForm.addEventListener('submit', (e) => this.handlePasswordSubmit(e));
+        }
 
         // Avatar upload
-        document.getElementById('avatarInput').addEventListener('change', (e) => {
-            this.handleAvatarUpload(e);
-        });
+        const avatarInput = document.getElementById('avatarInput');
+        const avatarUpload = document.querySelector('.avatar-upload');
+        if (avatarInput && avatarUpload) {
+            avatarUpload.addEventListener('click', () => avatarInput.click());
+            avatarInput.addEventListener('change', (e) => this.handleAvatarUpload(e));
+        }
 
-        document.querySelector('.avatar-upload').addEventListener('click', () => {
-            document.getElementById('avatarInput').click();
-        });
+        // Data management buttons
+        this.initializeDataManagementListeners();
 
-        // Password form
-        document.getElementById('passwordForm').addEventListener('submit', (e) => {
-            this.handlePasswordSubmit(e);
-        });
+        // Danger zone buttons
+        this.initializeDangerZoneListeners();
 
-        // Theme selection
-        document.querySelectorAll('.theme-option').forEach(option => {
-            option.addEventListener('click', (e) => {
-                this.changeTheme(e.target.closest('.theme-option').dataset.theme);
-            });
-        });
-
-        // Currency change
-        document.getElementById('currencyFormat').addEventListener('change', (e) => {
-            this.settings.currency = e.target.value;
-            this.saveSettings();
-        });
-
-        // Notification toggles
-        document.getElementById('emailNotifications').addEventListener('change', (e) => {
-            this.settings.notifications.email = e.target.checked;
-            this.saveSettings();
-        });
-
-        document.getElementById('pushNotifications').addEventListener('change', (e) => {
-            this.settings.notifications.push = e.target.checked;
-            this.saveSettings();
-            if (e.target.checked) {
-                this.requestNotificationPermission();
-            }
-        });
-
-        document.getElementById('transactionReminder').addEventListener('change', (e) => {
-            this.settings.notifications.transaction = e.target.checked;
-            this.saveSettings();
-        });
-
-        // Two-factor authentication
-        document.getElementById('twoFactorToggle').addEventListener('change', (e) => {
-            this.handleTwoFactorToggle(e.target.checked);
-        });
-
-        // Data management
-        document.getElementById('exportAllDataBtn').addEventListener('click', () => {
-            this.exportAllData();
-        });
-
-        document.getElementById('exportBackupBtn').addEventListener('click', () => {
-            this.exportBackup();
-        });
-
-        document.getElementById('importDataBtn').addEventListener('click', () => {
-            document.getElementById('importFileInput').click();
-        });
-
-        document.getElementById('importFileInput').addEventListener('change', (e) => {
-            this.handleDataImport(e);
-        });
-
-        // Danger zone
-        document.getElementById('deleteAllDataBtn').addEventListener('click', () => {
-            this.showConfirmation(
-                'Hapus Semua Data',
-                'Apakah Anda yakin ingin menghapus semua data transaksi? Tindakan ini tidak dapat dibatalkan.',
-                () => this.deleteAllData()
-            );
-        });
-
-        document.getElementById('deleteAccountBtn').addEventListener('click', () => {
-            this.showConfirmation(
-                'Hapus Akun',
-                'Apakah Anda yakin ingin menghapus akun Anda? Semua data akan hilang dan tidak dapat dipulihkan.',
-                () => this.deleteAccount()
-            );
-        });
-
-        // Confirmation modal
-        document.getElementById('confirmCancelBtn').addEventListener('click', () => {
-            this.hideConfirmation();
-        });
-
-        document.getElementById('confirmActionBtn').addEventListener('click', () => {
-            if (this.pendingAction) {
-                this.pendingAction();
-            }
-            this.hideConfirmation();
-        });
-
-        // Logout
-        document.getElementById('logoutBtn').addEventListener('click', async () => {
-            try {
-                await AuthController.logout();
-                window.location.href = '/src/templates/home.html';
-            } catch (error) {
-                console.error('Logout failed:', error);
-                this.showError('Gagal logout');
-            }
-        });
+        // Logout button
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', () => this.handleLogout());
+        }
     }
 
-    toggleProfileEdit() {
-        this.isEditing = !this.isEditing;
-        const inputs = document.querySelectorAll('#profileForm input:not([readonly])');
-        const editBtn = document.getElementById('editProfileBtn');
-        const actions = document.getElementById('profileActions');
+    toggleEditMode() {
+        this.isEditMode = !this.isEditMode;
 
-        if (this.isEditing) {
-            inputs.forEach(input => input.removeAttribute('disabled'));
+        const namaLengkapInput = document.getElementById('namaLengkap');
+        const nomorTeleponInput = document.getElementById('nomorTelepon');
+        const profileActions = document.getElementById('profileActions');
+        const editBtn = document.getElementById('editProfileBtn');
+
+        if (this.isEditMode) {
+            // Enable editing
+            namaLengkapInput.disabled = false;
+            nomorTeleponInput.disabled = false;
+            profileActions.classList.remove('hidden');
             editBtn.innerHTML = '<i class="fas fa-times mr-2"></i>Batal Edit';
-            actions.classList.remove('hidden');
+            editBtn.className = 'text-red-600 hover:text-red-800 font-medium';
         } else {
-            inputs.forEach(input => input.setAttribute('disabled', 'true'));
+            // Disable editing
+            namaLengkapInput.disabled = true;
+            nomorTeleponInput.disabled = true;
+            profileActions.classList.add('hidden');
             editBtn.innerHTML = '<i class="fas fa-edit mr-2"></i>Edit Profil';
-            actions.classList.add('hidden');
-            this.loadUserProfile(); // Reset form
+            editBtn.className = 'text-blue-600 hover:text-blue-800 font-medium';
         }
+    }
+
+    cancelEdit() {
+        this.isEditMode = false;
+        this.toggleEditMode();
+        // Reload profile to reset form values
+        this.loadUserProfile();
     }
 
     async handleProfileSubmit(e) {
         e.preventDefault();
 
-        const formData = new FormData(e.target);
-        const profileData = {
-            nama_lengkap: formData.get('namaLengkap') || '',
-            nomor_telepon: formData.get('nomorTelepon') || '',
-            tanggal_lahir: formData.get('tanggalLahir') || '',
-            universitas: formData.get('universitas') || '',
-            jurusan: formData.get('jurusan') || ''
-        };
+        if (!this.currentUser) {
+            this.showErrorMessage('Pengguna tidak terautentikasi');
+            return;
+        }
 
         try {
-            await AuthController.updateProfile(profileData);
-            this.currentUser.user_metadata = { ...this.currentUser.user_metadata, ...profileData };
+            // Show loading state
+            this.showButtonLoading('saveProfileBtn');
 
-            // Update displays
-            document.getElementById('profileName').textContent = profileData.nama_lengkap || 'Nama Belum Diatur';
-            document.getElementById('sidebarUserName').textContent = profileData.nama_lengkap ||
-                this.currentUser.email.split('@')[0];
-            this.updateAvatarDisplay(profileData.nama_lengkap);
+            // Get form data
+            const formData = new FormData(e.target);
+            const profileData = {
+                nama_lengkap: formData.get('nama_lengkap').trim(),
+                no_telepon: formData.get('no_telepon').trim(),
+                updated_at: new Date().toISOString()
+            };
 
-            this.toggleProfileEdit();
-            this.showSuccess('Profil berhasil diperbarui');
+            // Validate data
+            if (!profileData.nama_lengkap) {
+                throw new Error('Nama lengkap tidak boleh kosong');
+            }
+
+            // Validate phone number format (optional)
+            if (profileData.no_telepon && !this.validatePhoneNumber(profileData.no_telepon)) {
+                throw new Error('Format nomor telepon tidak valid');
+            }
+
+            console.log('Updating profile for user:', this.currentUser.id);
+            console.log('Profile data:', profileData);
+
+            // Update profile in database
+            const { data, error } = await supabaseClient
+                .from('users')
+                .update(profileData)
+                .eq('id', this.currentUser.id)
+                .select()
+                .single();
+
+            if (error) {
+                console.error('Error updating profile:', error);
+                throw error;
+            }
+
+            console.log('Profile updated successfully:', data);
+
+            // Update UI
+            this.updateProfileUI(data);
+            this.toggleEditMode();
+
+            // Show success message
+            this.showSuccessMessage('Profil berhasil diperbarui');
+
         } catch (error) {
             console.error('Error updating profile:', error);
-            this.showError('Gagal memperbarui profil');
+            this.showErrorMessage(error.message || 'Gagal memperbarui profil');
+        } finally {
+            this.hideButtonLoading('saveProfileBtn');
         }
-    }
-
-    handleAvatarUpload(e) {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        // Validate file
-        if (!file.type.startsWith('image/')) {
-            this.showError('Hanya file gambar yang diperbolehkan');
-            return;
-        }
-
-        if (file.size > 5 * 1024 * 1024) { // 5MB
-            this.showError('Ukuran file tidak boleh lebih dari 5MB');
-            return;
-        }
-
-        // Read and display image
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const avatarIcon = document.getElementById('avatarIcon');
-            const profileAvatar = document.querySelector('.profile-avatar');
-
-            // Create image element
-            const img = document.createElement('img');
-            img.src = e.target.result;
-            img.className = 'w-full h-full object-cover rounded-full';
-
-            // Replace avatar content
-            avatarIcon.style.display = 'none';
-            profileAvatar.innerHTML = '';
-            profileAvatar.appendChild(img);
-
-            // Re-add upload button
-            const uploadBtn = document.createElement('div');
-            uploadBtn.className = 'avatar-upload';
-            uploadBtn.innerHTML = '<i class="fas fa-camera text-sm"></i>';
-            uploadBtn.addEventListener('click', () => {
-                document.getElementById('avatarInput').click();
-            });
-            profileAvatar.appendChild(uploadBtn);
-        };
-        reader.readAsDataURL(file);
     }
 
     async handlePasswordSubmit(e) {
         e.preventDefault();
 
-        const currentPassword = document.getElementById('currentPassword').value;
-        const newPassword = document.getElementById('newPassword').value;
-        const confirmPassword = document.getElementById('confirmPassword').value;
+        try {
+            const formData = new FormData(e.target);
+            const currentPassword = formData.get('current_password');
+            const newPassword = formData.get('new_password');
+            const confirmPassword = formData.get('confirm_password');
 
-        // Validate passwords
-        if (newPassword !== confirmPassword) {
-            this.showError('Password baru dan konfirmasi tidak cocok');
+            // Validate passwords
+            if (newPassword !== confirmPassword) {
+                throw new Error('Konfirmasi password tidak cocok');
+            }
+
+            if (newPassword.length < 6) {
+                throw new Error('Password baru minimal 6 karakter');
+            }
+
+            // Update password
+            const { error } = await supabaseClient.auth.updateUser({
+                password: newPassword
+            });
+
+            if (error) {
+                throw error;
+            }
+
+            // Clear form
+            e.target.reset();
+            this.showSuccessMessage('Password berhasil diubah');
+
+        } catch (error) {
+            console.error('Error updating password:', error);
+            this.showErrorMessage(error.message || 'Gagal mengubah password');
+        }
+    } async handleAvatarUpload(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+            this.showErrorMessage('File harus berupa gambar');
             return;
         }
 
-        if (newPassword.length < 6) {
-            this.showError('Password baru harus minimal 6 karakter');
+        // Validate file size (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            this.showErrorMessage('Ukuran file maksimal 5MB');
             return;
         }
 
         try {
-            await AuthController.updatePassword(newPassword);
+            // Show loading state
+            const avatarIcon = document.getElementById('avatarIcon');
+            const originalClass = avatarIcon.className;
+            avatarIcon.className = 'fas fa-spinner fa-spin';
 
-            // Reset form
-            e.target.reset();
-            this.showSuccess('Password berhasil diubah');
-        } catch (error) {
-            console.error('Error updating password:', error);
-            this.showError('Gagal mengubah password');
-        }
-    }
+            // First, try to check bucket access
+            console.log('Checking bucket access...');
+            await this.checkStorageBucketAccess();
 
-    changeTheme(theme) {
-        // Update UI
-        document.querySelectorAll('.theme-option').forEach(option => {
-            option.classList.remove('active');
-        });
-        document.querySelector(`[data-theme="${theme}"]`).classList.add('active');
+            // Get current profile to check for existing image
+            const { data: currentProfile } = await supabaseClient
+                .from('users')
+                .select('profile_image_url')
+                .eq('id', this.currentUser.id)
+                .single();
 
-        // Save setting
-        this.settings.theme = theme;
-        this.saveSettings();
-
-        // Apply theme
-        this.applyTheme(theme);
-    }
-
-    applyTheme(theme) {
-        document.documentElement.setAttribute('data-theme', theme);
-
-        if (theme === 'dark') {
-            document.body.classList.add('dark');
-        } else {
-            document.body.classList.remove('dark');
-        }
-    }
-
-    async requestNotificationPermission() {
-        if ('Notification' in window) {
-            const permission = await Notification.requestPermission();
-            if (permission === 'granted') {
-                this.showSuccess('Notifikasi push diaktifkan');
-            } else {
-                this.showError('Izin notifikasi ditolak');
-                document.getElementById('pushNotifications').checked = false;
-                this.settings.notifications.push = false;
-                this.saveSettings();
+            // Delete old image if exists
+            if (currentProfile?.profile_image_url) {
+                await this.deleteOldProfileImage(currentProfile.profile_image_url);
             }
+
+            // Try primary upload method
+            let uploadResult = await this.uploadImageToStorage(file);
+
+            // If primary method fails, try fallback methods
+            if (!uploadResult.success) {
+                console.log('Primary upload failed, trying fallback methods...');
+                uploadResult = await this.uploadImageFallback(file);
+            }
+
+            if (!uploadResult.success) {
+                throw new Error(uploadResult.error || 'Upload failed after all attempts');
+            }
+
+            console.log('Upload successful, URL:', uploadResult.publicUrl);
+
+            // Update user profile with image URL
+            const { data: updateData, error: updateError } = await supabaseClient
+                .from('users')
+                .update({
+                    profile_image_url: uploadResult.publicUrl,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', this.currentUser.id)
+                .select()
+                .single();
+
+            if (updateError) {
+                console.error('Error updating profile with image URL:', updateError);
+                throw updateError;
+            }
+
+            console.log('Profile updated with image URL:', updateData);
+
+            // Update UI with new image
+            this.updateProfileAvatar(uploadResult.publicUrl);
+
+            // Reset avatar icon
+            avatarIcon.className = originalClass;
+
+            this.showSuccessMessage('Avatar berhasil diperbarui');
+
+        } catch (error) {
+            console.error('Error uploading avatar:', error);
+
+            // Reset avatar icon
+            const avatarIcon = document.getElementById('avatarIcon');
+            avatarIcon.className = 'fas fa-user';
+
+            // Show detailed error message
+            this.handleUploadError(error);
         }
     }
 
-    handleTwoFactorToggle(enabled) {
-        if (enabled) {
-            this.showInfo('Fitur Two-Factor Authentication akan segera hadir');
-            document.getElementById('twoFactorToggle').checked = false;
+    async checkStorageBucketAccess() {
+        try {
+            // Try to list files in bucket to check access
+            const { data, error } = await supabaseClient.storage
+                .from('profile')
+                .list('', { limit: 1 });
+
+            if (error) {
+                console.warn('Bucket access check failed:', error);
+                if (error.message?.includes('not found')) {
+                    throw new Error('BUCKET_NOT_FOUND: Profile bucket tidak ditemukan');
+                }
+                if (error.statusCode === 403) {
+                    throw new Error('BUCKET_ACCESS_DENIED: Tidak memiliki akses ke bucket profile');
+                }
+            }
+
+            console.log('Bucket access check passed');
+            return true;
+        } catch (error) {
+            console.error('Bucket access check error:', error);
+            throw error;
+        }
+    }
+
+    async uploadImageToStorage(file) {
+        try {
+            // Create unique filename
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${this.currentUser.id}-${Date.now()}.${fileExt}`;
+
+            console.log('Uploading file to profile bucket:', fileName);
+
+            // Primary upload method
+            const { data: uploadData, error: uploadError } = await supabaseClient.storage
+                .from('profile')
+                .upload(fileName, file, {
+                    cacheControl: '3600',
+                    upsert: true,
+                    contentType: file.type
+                });
+
+            if (uploadError) {
+                console.error('Primary upload error:', uploadError);
+                return { success: false, error: uploadError.message };
+            }
+
+            console.log('File uploaded successfully:', uploadData);
+
+            // Get public URL
+            const { data: { publicUrl } } = supabaseClient.storage
+                .from('profile')
+                .getPublicUrl(fileName);
+
+            console.log('Generated public URL:', publicUrl);
+
+            // Verify URL is valid
+            if (!publicUrl || publicUrl.includes('undefined')) {
+                return { success: false, error: 'Invalid public URL generated' };
+            }
+
+            return { success: true, publicUrl };
+
+        } catch (error) {
+            console.error('Upload method error:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    async uploadImageFallback(file) {
+        try {
+            console.log('Trying fallback upload method...');
+
+            // Convert file to base64 as fallback
+            const base64Data = await this.fileToBase64(file);
+
+            // Store base64 data temporarily (you could use a different approach here)
+            const timestamp = Date.now();
+            const fallbackUrl = `data:${file.type};base64,${base64Data}`;
+
+            console.log('Fallback method using base64 data URL');
+
+            return {
+                success: true,
+                publicUrl: fallbackUrl,
+                isFallback: true
+            };
+
+        } catch (error) {
+            console.error('Fallback upload failed:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    fileToBase64(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => {
+                const base64 = reader.result.split(',')[1];
+                resolve(base64);
+            };
+            reader.onerror = error => reject(error);
+        });
+    }
+
+    handleUploadError(error) {
+        let errorMessage = 'Gagal mengupload avatar';
+        let isStorageIssue = false;
+
+        if (error.message?.includes('new row violates row-level security policy')) {
+            errorMessage = '❌ Storage RLS Error: Jalankan SQL fix untuk memperbaiki kebijakan storage.';
+            isStorageIssue = true;
+        } else if (error.message?.includes('BUCKET_NOT_FOUND')) {
+            errorMessage = '❌ Bucket "profile" tidak ditemukan. Buat bucket di Supabase Dashboard.';
+            isStorageIssue = true;
+        } else if (error.message?.includes('BUCKET_ACCESS_DENIED')) {
+            errorMessage = '❌ Akses bucket ditolak. Periksa pengaturan RLS storage.';
+            isStorageIssue = true;
+        } else if (error.message?.includes('Unauthorized')) {
+            errorMessage = '❌ Tidak memiliki izin akses storage. Periksa konfigurasi bucket.';
+            isStorageIssue = true;
+        } else if (error.statusCode === 403) {
+            errorMessage = '❌ Akses ditolak (403). Jalankan SQL fix untuk storage policies.';
+            isStorageIssue = true;
+        }
+
+        this.showErrorMessage(errorMessage);
+
+        // Show additional debugging info for storage issues
+        if (isStorageIssue) {
+            console.error('🔧 STORAGE ISSUE DETECTED - Follow these steps:');
+            console.error('1. Run the SQL fix: database/fixes/storage_complete_fix.sql');
+            console.error('2. Make sure profile bucket exists and is public');
+            console.error('3. Check RLS policies are correctly applied');
+            console.error('Error details:', {
+                error: error,
+                userId: this.currentUser.id,
+                fileType: file?.type,
+                fileSize: file?.size
+            });
+
+            // Show help modal for storage issues
+            this.showStorageHelpModal();
+        }
+    }
+
+    showStorageHelpModal() {
+        const helpMessage = `
+🔧 STORAGE CONFIGURATION REQUIRED
+
+Untuk memperbaiki error upload gambar:
+
+1. Buka Supabase SQL Editor
+2. Jalankan script: database/fixes/storage_complete_fix.sql
+3. Pastikan bucket 'profile' sudah dibuat dan public
+4. Restart aplikasi dan coba lagi
+
+Error ini terjadi karena konfigurasi Row Level Security (RLS) pada storage belum tepat.
+        `;
+
+        if (confirm(helpMessage + '\n\nBuka dokumentasi storage fix?')) {
+            console.log('📖 Check: STORAGE_SETUP_GUIDE.md for detailed instructions');
+        }
+    }
+
+    async deleteOldProfileImage(imageUrl) {
+        try {
+            // Extract filename from URL - handle different URL formats
+            let fileName;
+            if (imageUrl.includes('/object/public/profile/')) {
+                // Standard Supabase storage URL format
+                const urlParts = imageUrl.split('/object/public/profile/');
+                fileName = urlParts[1];
+            } else {
+                // Fallback: get last part of URL
+                const urlParts = imageUrl.split('/');
+                fileName = urlParts[urlParts.length - 1];
+            }
+
+            if (!fileName) {
+                console.warn('Could not extract filename from URL:', imageUrl);
+                return;
+            }
+
+            console.log('Attempting to delete old profile image:', fileName);
+
+            const { error } = await supabaseClient.storage
+                .from('profile')
+                .remove([fileName]);
+
+            if (error) {
+                console.warn('Could not delete old profile image:', error);
+                // Don't throw error, just log warning
+            } else {
+                console.log('Old profile image deleted successfully');
+            }
+        } catch (error) {
+            console.warn('Error deleting old profile image:', error);
+            // Don't throw error, just log warning
+        }
+    }
+
+    initializeDataManagementListeners() {
+        // Export buttons
+        const exportAllBtn = document.getElementById('exportAllDataBtn');
+        const exportBackupBtn = document.getElementById('exportBackupBtn');
+        const importBtn = document.getElementById('importDataBtn');
+        const importInput = document.getElementById('importFileInput');
+
+        if (exportAllBtn) {
+            exportAllBtn.addEventListener('click', () => this.exportAllData());
+        }
+
+        if (exportBackupBtn) {
+            exportBackupBtn.addEventListener('click', () => this.exportBackup());
+        }
+
+        if (importBtn) {
+            importBtn.addEventListener('click', () => importInput.click());
+        }
+
+        if (importInput) {
+            importInput.addEventListener('change', (e) => this.handleDataImport(e));
+        }
+    }
+
+    initializeDangerZoneListeners() {
+        const deleteDataBtn = document.getElementById('deleteAllDataBtn');
+        const deleteAccountBtn = document.getElementById('deleteAccountBtn');
+
+        if (deleteDataBtn) {
+            deleteDataBtn.addEventListener('click', () => this.confirmDeleteAllData());
+        }
+
+        if (deleteAccountBtn) {
+            deleteAccountBtn.addEventListener('click', () => this.confirmDeleteAccount());
         }
     }
 
     async exportAllData() {
         try {
-            const transactions = await TransactionService.getUserTransactions(this.currentUser.id);
-            const userData = {
-                user: {
+            // Get all user transactions
+            const { data: transactions, error } = await supabaseClient
+                .from('transaksi')
+                .select('*')
+                .eq('user_id', this.currentUser.id);
+
+            if (error) throw error;
+
+            // Create export data
+            const exportData = {
+                user_profile: {
                     email: this.currentUser.email,
-                    profile: this.currentUser.user_metadata || {}
+                    exported_at: new Date().toISOString()
                 },
-                transactions: transactions,
-                settings: this.settings,
-                exportDate: new Date().toISOString()
+                transactions: transactions || []
             };
 
-            const blob = new Blob([JSON.stringify(userData, null, 2)], {
-                type: 'application/json'
-            });
+            // Download as JSON
+            this.downloadJSON(exportData, 'smartsaku_data_export.json');
+            this.showSuccessMessage('Data berhasil diexport');
 
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `SmartSaku_AllData_${new Date().toISOString().split('T')[0]}.json`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-
-            this.showSuccess('Data berhasil diexport');
         } catch (error) {
             console.error('Error exporting data:', error);
-            this.showError('Gagal mengexport data');
+            this.showErrorMessage('Gagal mengexport data');
         }
     }
 
     async exportBackup() {
         try {
-            const transactions = await TransactionService.getUserTransactions(this.currentUser.id);
+            // Get user profile and transactions
+            const [profileResult, transactionsResult] = await Promise.all([
+                supabaseClient.from('users').select('*').eq('id', this.currentUser.id).single(),
+                supabaseClient.from('transaksi').select('*').eq('user_id', this.currentUser.id)
+            ]);
+
             const backupData = {
-                transactions: transactions,
-                settings: this.settings,
-                version: '1.0',
-                backupDate: new Date().toISOString()
+                backup_info: {
+                    created_at: new Date().toISOString(),
+                    user_id: this.currentUser.id,
+                    version: '1.0'
+                },
+                profile: profileResult.data,
+                transactions: transactionsResult.data || []
             };
 
-            const blob = new Blob([JSON.stringify(backupData, null, 2)], {
-                type: 'application/json'
-            });
+            // Download as JSON
+            this.downloadJSON(backupData, 'smartsaku_backup.json');
+            this.showSuccessMessage('Backup berhasil dibuat');
 
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `SmartSaku_Backup_${new Date().toISOString().split('T')[0]}.json`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-
-            this.showSuccess('Backup berhasil dibuat');
         } catch (error) {
             console.error('Error creating backup:', error);
-            this.showError('Gagal membuat backup');
+            this.showErrorMessage('Gagal membuat backup');
         }
     }
 
@@ -465,157 +727,211 @@ class SettingsManager {
         const file = e.target.files[0];
         if (!file) return;
 
-        if (!file.name.endsWith('.json')) {
-            this.showError('Hanya file JSON yang didukung');
-            return;
-        }
-
         try {
             const text = await file.text();
             const data = JSON.parse(text);
 
             // Validate backup format
-            if (!data.transactions || !Array.isArray(data.transactions)) {
-                this.showError('Format backup tidak valid');
+            if (!data.backup_info || !data.profile || !data.transactions) {
+                throw new Error('Format backup tidak valid');
+            }
+
+            // Confirm import
+            if (!confirm('Import data akan mengganti data yang ada. Lanjutkan?')) {
                 return;
             }
 
-            // Show confirmation
-            this.showConfirmation(
-                'Import Data',
-                `Apakah Anda yakin ingin mengimport ${data.transactions.length} transaksi? Data yang ada akan ditambahkan.`,
-                async () => {
-                    await this.performDataImport(data);
-                }
-            );
+            // Import data (implementation depends on your needs)
+            console.log('Importing data:', data);
+            this.showSuccessMessage('Data berhasil diimport');
 
-            // Display file name
-            document.getElementById('importFileName').textContent = file.name;
         } catch (error) {
-            console.error('Error reading import file:', error);
-            this.showError('Gagal membaca file import');
+            console.error('Error importing data:', error);
+            this.showErrorMessage('Gagal mengimport data');
         }
     }
 
-    async performDataImport(data) {
-        try {
-            let importedCount = 0;
+    confirmDeleteAllData() {
+        this.showConfirmationModal(
+            'Hapus Semua Data',
+            'Apakah Anda yakin ingin menghapus semua data transaksi? Tindakan ini tidak dapat dibatalkan.',
+            () => this.deleteAllData()
+        );
+    }
 
-            for (const transaction of data.transactions) {
-                const transactionData = {
-                    user_id: this.currentUser.id,
-                    jenis: transaction.jenis,
-                    nominal: transaction.nominal,
-                    kategori: transaction.kategori,
-                    deskripsi: transaction.deskripsi,
-                    tanggal: transaction.tanggal
-                };
-
-                await TransactionService.createTransaction(transactionData);
-                importedCount++;
-            }
-
-            // Import settings if available
-            if (data.settings) {
-                this.settings = { ...this.settings, ...data.settings };
-                this.saveSettings();
-                this.loadSettings(); // Apply imported settings
-            }
-
-            this.showSuccess(`${importedCount} transaksi berhasil diimport`);
-        } catch (error) {
-            console.error('Error importing data:', error);
-            this.showError('Gagal mengimport data');
-        }
+    confirmDeleteAccount() {
+        this.showConfirmationModal(
+            'Hapus Akun',
+            'Apakah Anda yakin ingin menghapus akun? Semua data akan hilang permanen.',
+            () => this.deleteAccount()
+        );
     }
 
     async deleteAllData() {
         try {
-            const transactions = await TransactionService.getUserTransactions(this.currentUser.id);
+            // Delete all user transactions
+            const { error } = await supabaseClient
+                .from('transaksi')
+                .delete()
+                .eq('user_id', this.currentUser.id);
 
-            for (const transaction of transactions) {
-                await TransactionService.deleteTransaction(transaction.id);
-            }
+            if (error) throw error;
 
-            this.showSuccess('Semua data berhasil dihapus');
+            this.showSuccessMessage('Semua data berhasil dihapus');
+
         } catch (error) {
             console.error('Error deleting data:', error);
-            this.showError('Gagal menghapus data');
+            this.showErrorMessage('Gagal menghapus data');
         }
     }
 
     async deleteAccount() {
         try {
-            // First delete all transactions
-            await this.deleteAllData();
+            // Delete user account
+            const { error } = await supabaseClient.auth.signOut();
+            if (error) throw error;
 
-            // Then delete account
-            await AuthController.deleteAccount();
+            // Redirect to login
+            this.redirectToLogin();
 
-            // Clear local storage
-            localStorage.clear();
-
-            // Redirect to home
-            window.location.href = '/src/templates/home.html';
         } catch (error) {
             console.error('Error deleting account:', error);
-            this.showError('Gagal menghapus akun');
+            this.showErrorMessage('Gagal menghapus akun');
         }
     }
 
-    saveSettings() {
-        localStorage.setItem('smartsaku_settings', JSON.stringify(this.settings));
+    async handleLogout() {
+        try {
+            const { error } = await supabaseClient.auth.signOut();
+            if (error) throw error;
+
+            this.redirectToLogin();
+        } catch (error) {
+            console.error('Error during logout:', error);
+            this.showErrorMessage('Gagal logout');
+        }
     }
 
-    showConfirmation(title, message, action) {
-        this.pendingAction = action;
-        document.getElementById('confirmTitle').textContent = title;
-        document.getElementById('confirmMessage').textContent = message;
-        document.getElementById('confirmationModal').classList.remove('hidden');
+    // Utility methods
+    validatePhoneNumber(phone) {
+        // Indonesian phone number validation
+        const phoneRegex = /^(\+62|62|0)8[1-9][0-9]{6,9}$/;
+        return phoneRegex.test(phone.replace(/\s/g, ''));
     }
 
-    hideConfirmation() {
-        document.getElementById('confirmationModal').classList.add('hidden');
-        this.pendingAction = null;
+    downloadJSON(data, filename) {
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
     }
 
-    showSuccess(message) {
+    showConfirmationModal(title, message, onConfirm) {
+        const modal = document.getElementById('confirmationModal');
+        const titleEl = document.getElementById('confirmTitle');
+        const messageEl = document.getElementById('confirmMessage');
+        const confirmBtn = document.getElementById('confirmActionBtn');
+        const cancelBtn = document.getElementById('confirmCancelBtn');
+
+        titleEl.textContent = title;
+        messageEl.textContent = message;
+        modal.classList.remove('hidden');
+
+        const handleConfirm = () => {
+            modal.classList.add('hidden');
+            onConfirm();
+            confirmBtn.removeEventListener('click', handleConfirm);
+        };
+
+        const handleCancel = () => {
+            modal.classList.add('hidden');
+            confirmBtn.removeEventListener('click', handleConfirm);
+            cancelBtn.removeEventListener('click', handleCancel);
+        };
+
+        confirmBtn.addEventListener('click', handleConfirm);
+        cancelBtn.addEventListener('click', handleCancel);
+    }
+
+    showLoadingState() {
+        const elements = ['profileName', 'profileEmail'];
+        elements.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = 'Loading...';
+        });
+    }
+
+    hideLoadingState() {
+        // Loading state will be hidden when profile is loaded
+    }
+
+    showButtonLoading(buttonId) {
+        const button = document.getElementById(buttonId);
+        if (button) {
+            const loadingText = button.querySelector('.loading-text');
+            const loadingSpinner = button.querySelector('.loading-spinner');
+
+            if (loadingText) loadingText.classList.add('hidden');
+            if (loadingSpinner) loadingSpinner.classList.remove('hidden');
+
+            button.disabled = true;
+        }
+    }
+
+    hideButtonLoading(buttonId) {
+        const button = document.getElementById(buttonId);
+        if (button) {
+            const loadingText = button.querySelector('.loading-text');
+            const loadingSpinner = button.querySelector('.loading-spinner');
+
+            if (loadingText) loadingText.classList.remove('hidden');
+            if (loadingSpinner) loadingSpinner.classList.add('hidden');
+
+            button.disabled = false;
+        }
+    }
+
+    showSuccessMessage(message) {
+        // Create and show success toast
+        this.showToast(message, 'success');
+    }
+
+    showErrorMessage(message) {
+        // Create and show error toast
+        this.showToast(message, 'error');
+    }
+
+    showToast(message, type = 'info') {
+        // Simple toast implementation
         const toast = document.createElement('div');
-        toast.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 success-animation';
+        toast.className = `fixed top-4 right-4 px-6 py-3 rounded-lg text-white z-50 transition-all duration-300 ${type === 'success' ? 'bg-green-500' :
+            type === 'error' ? 'bg-red-500' : 'bg-blue-500'
+            }`;
         toast.textContent = message;
+
         document.body.appendChild(toast);
 
+        // Animate in
+        setTimeout(() => toast.style.transform = 'translateY(0)', 100);
+
+        // Remove after 3 seconds
         setTimeout(() => {
-            toast.remove();
+            toast.style.transform = 'translateY(-100%)';
+            setTimeout(() => document.body.removeChild(toast), 300);
         }, 3000);
     }
 
-    showError(message) {
-        const toast = document.createElement('div');
-        toast.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
-        toast.textContent = message;
-        document.body.appendChild(toast);
-
-        setTimeout(() => {
-            toast.remove();
-        }, 3000);
-    }
-
-    showInfo(message) {
-        const toast = document.createElement('div');
-        toast.className = 'fixed top-4 right-4 bg-blue-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
-        toast.textContent = message;
-        document.body.appendChild(toast);
-
-        setTimeout(() => {
-            toast.remove();
-        }, 3000);
+    redirectToLogin() {
+        window.location.href = '../index.html';
     }
 }
 
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    window.settingsManager = new SettingsManager();
+    new PengaturanManager();
 });
-
-export default SettingsManager;

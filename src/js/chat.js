@@ -1,5 +1,6 @@
 import AuthController from '../services/AuthController.js';
 import TransactionService from '../services/TransactionService.js';
+import GroqService from '../services/GroqService.js';
 
 class ChatManager {
     constructor() {
@@ -424,83 +425,72 @@ class ChatManager {
             .slice(0, count);
     }
 
-    generateResponse(userMessage) {
-        const message = userMessage.toLowerCase();
-        let response = '';
+    async generateResponse(userMessage) {
+        console.log("Generating response for:", userMessage);
 
-        console.log("Generating response for:", message);
+        try {
+            // Periksa apakah pesan tentang analisis keuangan pengguna
+            const isFinancialAnalysisRequest = this.isFinancialAnalysisRequest(userMessage);
+            const isSaldoRequest = this.isSaldoRequest(userMessage);
 
-        // Check if the message matches any knowledge base entries
-        if (message.includes('budget') || message.includes('anggaran')) {
-            response = this.knowledgeBase['mengatur budget'];
-            console.log("Responding with budget info");
+            let contextData = '';
+
+            // Tambahkan konteks data keuangan jika diperlukan
+            if (isFinancialAnalysisRequest || isSaldoRequest) {
+                contextData = this.prepareFinancialContext();
+                console.log("Menambahkan konteks keuangan ke prompt");
+            }
+
+            // Gunakan API Groq untuk mendapatkan respons
+            const response = await GroqService.generateResponse(userMessage, contextData);
+
+            this.addAIMessage(response);
+        } catch (error) {
+            console.error("Error generating response:", error);
+
+            // Use GroqService fallback instead of showing error to user
+            const fallbackResponse = await GroqService.generateResponse(userMessage, contextData);
+            this.addAIMessage(fallbackResponse);
         }
-        else if (message.includes('tabung') || message.includes('menabung') || message.includes('tabungan')) {
-            response = this.knowledgeBase['tabungan bulanan'];
-            console.log("Responding with savings info");
-        }
-        else if (message.includes('hemat') || message.includes('menghemat') || message.includes('kurangi pengeluaran')) {
-            response = this.knowledgeBase['menghemat pengeluaran'];
-            console.log("Responding with savings tips");
-        }
-        else if (message.includes('investasi') || message.includes('saham') || message.includes('reksa dana')) {
-            response = this.knowledgeBase['investasi pemula'];
-            console.log("Responding with investment info");
-        }
-        else if (message.includes('darurat') || message.includes('emergency')) {
-            response = this.knowledgeBase['dana darurat'];
-            console.log("Responding with emergency fund info");
-        }
-        else if (message.includes('hutang') || message.includes('utang') || message.includes('pinjaman') || message.includes('cicilan')) {
-            response = this.knowledgeBase['hutang'];
-            console.log("Responding with debt info");
-        }
-        else if (message.includes('fitur') || message.includes('aplikasi') || message.includes('smartsaku')) {
-            response = this.knowledgeBase['fitur smartsaku'];
-            console.log("Responding with app features");
-        }
-        else if (message.includes('analisis') || message.includes('pengeluaran') || message.includes('keuangan saya')) {
-            response = this.generateFinancialAnalysis();
-            console.log("Generating financial analysis");
-        }
-        else if (message.includes('saldo') || message.includes('uang saya') || message.includes('tabungan saya')) {
-            response = this.generateSaldoInformation();
-            console.log("Generating balance info");
-        }
-        else if (message.includes('terima kasih') || message.includes('makasih') || message.includes('thank')) {
-            response = `
-                <p>Sama-sama! Senang bisa membantu Anda. Jangan ragu untuk bertanya lagi jika ada hal lain yang ingin Anda ketahui tentang pengelolaan keuangan.</p>
-                <p class="mt-2">Ada lagi yang bisa saya bantu?</p>
-            `;
-            console.log("Responding to thanks");
-        }
-        else if (this.isGreeting(message)) {
-            const userName = this.currentUser?.user_metadata?.nama_lengkap || 'Anda';
-            response = `
-                <p>Halo ${userName}! Senang bertemu dengan Anda. Apa yang ingin Anda ketahui tentang keuangan pribadi hari ini?</p>
-                <p class="mt-2">Anda bisa bertanya tentang cara menabung, investasi, anggaran, atau tips menghemat pengeluaran.</p>
-            `;
-            console.log("Responding to greeting");
-        }
-        else {
-            // Generic response
-            response = `
-                <p>Maaf, saya belum memiliki informasi spesifik tentang "${userMessage}". Berikut adalah beberapa topik yang bisa saya bantu:</p>
-                <ul class="list-disc ml-5 mt-2">
-                    <li>Cara mengatur budget</li>
-                    <li>Strategi menabung</li>
-                    <li>Tips menghemat pengeluaran</li>
-                    <li>Dasar-dasar investasi</li>
-                    <li>Pengelolaan dana darurat</li>
-                    <li>Strategi melunasi hutang</li>
-                    <li>Fitur-fitur SmartSaku</li>
-                </ul>
-                <p class="mt-2">Silakan tanyakan tentang salah satu topik di atas!</p>
-            `;
-            console.log("Providing generic response");
+    }
+
+    isFinancialAnalysisRequest(message) {
+        const keywords = ['analisis', 'analisa', 'pengeluaran', 'keuangan saya', 'kondisi keuangan', 'bagaimana keuangan'];
+        return keywords.some(keyword => message.toLowerCase().includes(keyword));
+    }
+
+    isSaldoRequest(message) {
+        const keywords = ['saldo', 'uang saya', 'tabungan saya', 'berapa uang', 'berapa saldo', 'pemasukan', 'pengeluaran'];
+        return keywords.some(keyword => message.toLowerCase().includes(keyword));
+    }
+
+    prepareFinancialContext() {
+        if (!this.financialData) {
+            return 'Tidak ada data keuangan tersedia.';
         }
 
-        this.addAIMessage(response);
+        const formatCurrency = (amount) => {
+            return new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR',
+                minimumFractionDigits: 0
+            }).format(amount);
+        };
+
+        // Hitung rasio pengeluaran terhadap pemasukan
+        const spendingRatio = this.financialData.totalPemasukan > 0 ?
+            (this.financialData.totalPengeluaran / this.financialData.totalPemasukan) * 100 : 0;
+
+        // Siapkan konteks data keuangan
+        return `
+            Data Keuangan Pengguna:
+            - Saldo saat ini: ${formatCurrency(this.financialData.totalSaldo)}
+            - Total Pemasukan: ${formatCurrency(this.financialData.totalPemasukan)}
+            - Total Pengeluaran: ${formatCurrency(this.financialData.totalPengeluaran)} (${spendingRatio.toFixed(1)}% dari pemasukan)
+            - Jumlah Transaksi: ${this.financialData.totalTransaksi} transaksi
+            
+            Berikan analisis dan saran berdasarkan data ini. Jika rasio pengeluaran > 70% dari pemasukan, sarankan untuk mengurangi pengeluaran.
+        `;
     }
 
     isGreeting(message) {

@@ -10,6 +10,7 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
     />
     <link rel="stylesheet" href="../css/dashboard.css" />
+    <link rel="stylesheet" href="../css/responsive.css" />
     <style>
       .settings-card {
         background: white;
@@ -246,7 +247,7 @@
       <div class="p-6">
         <!-- Header -->
         <div class="mb-8">
-          <h1 class="text-3xl font-bold text-gray-900">Pengaturan</h1>
+          <h1 class="text-3xl font-bold gradient-text">Pengaturan</h1>
           <p class="text-gray-600">Kelola akun dan preferensi aplikasi Anda</p>
         </div>
 
@@ -299,7 +300,9 @@
                     <input
                       type="text"
                       id="namaLengkap"
+                      name="nama_lengkap"
                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="Masukkan nama lengkap"
                       disabled
                     />
                   </div>
@@ -310,6 +313,7 @@
                     <input
                       type="email"
                       id="email"
+                      name="email"
                       class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50"
                       disabled
                       readonly
@@ -317,7 +321,7 @@
                   </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 gap-4">
                   <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2"
                       >Nomor Telepon</label
@@ -325,45 +329,12 @@
                     <input
                       type="tel"
                       id="nomorTelepon"
+                      name="no_telepon"
                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="Contoh: 08123456789"
                       disabled
                     />
                   </div>
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2"
-                      >Tanggal Lahir</label
-                    >
-                    <input
-                      type="date"
-                      id="tanggalLahir"
-                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      disabled
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2"
-                    >Universitas/Institusi</label
-                  >
-                  <input
-                    type="text"
-                    id="universitas"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    disabled
-                  />
-                </div>
-
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2"
-                    >Jurusan</label
-                  >
-                  <input
-                    type="text"
-                    id="jurusan"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    disabled
-                  />
                 </div>
 
                 <div class="hidden" id="profileActions">
@@ -380,7 +351,10 @@
                       id="saveProfileBtn"
                       class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                     >
-                      Simpan Perubahan
+                      <span class="loading-text">Simpan Perubahan</span>
+                      <span class="loading-spinner hidden">
+                        <i class="fas fa-spinner fa-spin mr-2"></i>Menyimpan...
+                      </span>
                     </button>
                   </div>
                 </div>
@@ -388,65 +362,6 @@
             </div>
           </div>
         </div>
-
-        <!-- Password Settings -->
-        <div class="settings-card">
-          <h3 class="text-lg font-semibold text-gray-900 mb-6">Keamanan</h3>
-
-          <div class="space-y-6">
-            <!-- Change Password -->
-            <div>
-              <h4 class="text-md font-medium text-gray-800 mb-4">
-                Ubah Password
-              </h4>
-              <form id="passwordForm" class="space-y-4">
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2"
-                    >Password Saat Ini</label
-                  >
-                  <input
-                    type="password"
-                    id="currentPassword"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    required
-                  />
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2"
-                    >Password Baru</label
-                  >
-                  <input
-                    type="password"
-                    id="newPassword"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    required
-                  />
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2"
-                    >Konfirmasi Password Baru</label
-                  >
-                  <input
-                    type="password"
-                    id="confirmPassword"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    required
-                  />
-                </div>
-                <button
-                  type="submit"
-                  class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  Ubah Password
-                </button>
-              </form>
-            </div>
-
-            
-          </div>
-        </div>
-
-        
 
         <!-- Data Management -->
         <div class="settings-card">
@@ -587,5 +502,6 @@
     </div>
 
     <script type="module" src="../js/pengaturan.js"></script>
+    <script src="../js/mobile-responsive.js"></script>
   </body>
 </html>

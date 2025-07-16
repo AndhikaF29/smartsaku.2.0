@@ -14,6 +14,7 @@ node_modules/
 dist
 dist-ssr
 build/
+out/
 .vite/
 *.local
 
@@ -22,9 +23,10 @@ build/
 .env.*
 !.env.example
 .env.local
-.env.development.local
+.env.development
 .env.test.local
-.env.production.local
+.env.production
+.env.*.local
 
 # Editor directories and files
 .vscode/*
@@ -56,4 +58,18 @@ coverage
 # OS files
 .DS_Store
 Thumbs.db
-.vercel
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Temporary files
+tmp/
+temp/
+
+# Local Netlify folder
+.netlify/
+
+# Local env files with secrets
+.secrets
+config.local.js
+env.local.js
