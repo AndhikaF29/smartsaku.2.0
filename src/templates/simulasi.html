@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Simulasi Keuangan - SmartSaku</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="../css/dashboard.css" />
+    <style>
+      .simulation-card {
+        background: white;
+        border-radius: 1rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        padding: 1.5rem;
+        transition: all 0.3s ease;
+        border: 1px solid rgba(226, 232, 240, 0.8);
+      }
+
+      .simulation-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+      }
+
+      .tab-button {
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        cursor: pointer;
+      }
+
+      .tab-button.active {
+        background: linear-gradient(135deg, #3b82f6, #06b6d4);
+        color: white;
+        box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+      }
+
+      .tab-button:not(.active) {
+        background: #f8fafc;
+        color: #6b7280;
+      }
+
+      .tab-button:not(.active):hover {
+        background: #e2e8f0;
+        color: #374151;
+      }
+
+      .chart-container {
+        position: relative;
+        height: 300px;
+        width: 100%;
+      }
+
+      .gradient-text {
+        background: linear-gradient(135deg, #3b82f6, #06b6d4);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .result-box {
+        background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+        border: 2px solid #bae6fd;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        margin-top: 1.5rem;
+      }
+
+      .hidden { display: none; }
+    </style>
+  </head>
+  <body class="bg-gray-50">
+    <!-- Mobile Menu Button -->
+    <button id="mobileMenuBtn" class="mobile-menu-btn lg:hidden">
+      <i class="fas fa-bars text-gray-600"></i>
+    </button>
+
+    <!-- Sidebar Overlay -->
+    <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+    <!-- Sidebar -->
+    <aside
+      id="sidebar"
+      class="w-64 bg-white shadow-lg sidebar-transition fixed h-full"
+    >
+      <div class="p-6">
+        <div class="flex items-center space-x-3">
+          <div
+            class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center"
+          >
+            <i class="fas fa-wallet text-white"></i>
+          </div>
+          <div>
+            <h1 class="text-xl font-bold text-gray-800">SmartSaku</h1>
+            <p class="text-sm text-gray-600">Keuangan Pintar</p>
+          </div>
+        </div>
+      </div>
+
+      <nav class="mt-8">
+        <a
+          href="dashboard.html"
+          class="nav-link flex items-center px-6 py-3 text-gray-700 hover:bg-gray-100"
+        >
+          <i class="fas fa-chart-line mr-3"></i>
+          Dashboard
+        </a>
+        <a
+          href="transaksi.html"
+          class="nav-link flex items-center px-6 py-3 text-gray-700 hover:bg-gray-100"
+        >
+          <i class="fas fa-exchange-alt mr-3"></i>
+          Transaksi
+        </a>
+        <a
+          href="laporan.html"
+          class="nav-link flex items-center px-6 py-3 text-gray-700 hover:bg-gray-100"
+        >
+          <i class="fas fa-file-alt mr-3"></i>
+          Laporan
+        </a>
+        <a
+          href="simulasi.html"
+          class="nav-link active flex items-center px-6 py-3 text-gray-700 hover:bg-gray-100"
+        >
+          <i class="fas fa-calculator mr-3"></i>
+          Simulasi
+        </a>
+        <a
+          href="chat.html"
+          class="nav-link flex items-center px-6 py-3 text-gray-700 hover:bg-gray-100"
+        >
+          <i class="fas fa-comment-dots mr-3"></i>
+          Chat Ai
+        </a>
+        <a
+          href="pengaturan.html"
+          class="nav-link flex items-center px-6 py-3 text-gray-700 hover:bg-gray-100"
+        >
+          <i class="fas fa-cog mr-3"></i>
+          Pengaturan
+        </a>
+      </nav>
+
+      <div class="absolute bottom-0 w-full p-6">
+        <div class="flex items-center space-x-3 p-3 bg-gray-100 rounded-lg">
+          <div
+            class="w-10 h-10 bg-gray-400 rounded-full flex items-center justify-center"
+          >
+            <i class="fas fa-user text-white"></i>
+          </div>
+          <div class="flex-1">
+            <p id="userName" class="text-sm font-medium text-gray-800">
+              Loading...
+            </p>
+            <p class="text-xs text-gray-600">Mahasiswa</p>
+          </div>
+          <button id="logoutBtn" class="text-gray-600 hover:text-red-600">
+            <i class="fas fa-sign-out-alt"></i>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="ml-64 min-h-screen">
+      <div class="p-6">
+        <!-- Header -->
+        <div class="mb-8">
+          <h1 class="text-3xl font-bold gradient-text mb-2">
+            Simulasi Keuangan
+          </h1>
+          <p class="text-gray-600">
+            Simulasikan berbagai skenario keuangan untuk merencanakan masa depan yang lebih baik
+          </p>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div class="mb-8">
+          <div class="flex flex-wrap gap-2">
+            <button id="tabTabungan" class="tab-button active">
+              <i class="fas fa-piggy-bank mr-2"></i>Tabungan
+            </button>
+            <button id="tabKredit" class="tab-button">
+              <i class="fas fa-credit-card mr-2"></i>Kredit
+            </button>
+            <button id="tabInvestasi" class="tab-button">
+              <i class="fas fa-chart-line mr-2"></i>Investasi
+            </button>
+            <button id="tabBudget" class="tab-button">
+              <i class="fas fa-wallet mr-2"></i>Budget Planning
+            </button>
+          </div>
+        </div>
+
+        <!-- Simulasi Tabungan -->
+        <div id="contentTabungan" class="simulation-content">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="simulation-card">
+              <h3 class="text-xl font-semibold text-gray-800 mb-4">
+                <i class="fas fa-piggy-bank text-green-600 mr-2"></i>
+                Simulasi Tabungan
+              </h3>
+              <form id="formTabungan" class="space-y-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Tabungan Awal (Rp)
+                  </label>
+                  <input
+                    type="number"
+                    id="tabunganAwal"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    placeholder="0"
+                    min="0"
+                  />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Setoran Bulanan (Rp)
+                  </label>
+                  <input
+                    type="number"
+                    id="setoranBulanan"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    placeholder="500000"
+                    min="0"
+                    required
+                  />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Bunga per Tahun (%)
+                  </label>
+                  <input
+                    type="number"
+                    id="bungaTabungan"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    placeholder="3"
+                    min="0"
+                    step="0.1"
+                  />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Jangka Waktu (tahun)
+                  </label>
+                  <input
+                    type="number"
+                    id="waktuTabungan"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    placeholder="5"
+                    min="1"
+                    required
+                  />
+                </div>
+                <button
+                  type="submit"
+                  class="w-full bg-green-600 text-white py-2 rounded-lg font-semibold hover:bg-green-700 transition-colors"
+                >
+                  Hitung Tabungan
+                </button>
+              </form>
+            </div>
+
+            <div class="simulation-card">
+              <div id="hasilTabungan">
+                <div class="text-center text-gray-500 py-8">
+                  <i class="fas fa-calculator text-4xl mb-4"></i>
+                  <p>Masukkan data untuk melihat simulasi</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Simulasi Kredit -->
+        <div id="contentKredit" class="simulation-content hidden">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="simulation-card">
+              <h3 class="text-xl font-semibold text-gray-800 mb-4">
+                <i class="fas fa-credit-card text-red-600 mr-2"></i>
+                Simulasi Kredit/Pinjaman
+              </h3>
+              <form id="formKredit" class="space-y-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Jumlah Pinjaman (Rp)
+                  </label>
+                  <input
+                    type="number"
+                    id="jumlahPinjaman"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    placeholder="10000000"
+                    min="0"
+                    required
+                  />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Bunga per Tahun (%)
+                  </label>
+                  <input
+                    type="number"
+                    id="bungaKredit"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    placeholder="12"
+                    min="0"
+                    step="0.1"
+                    required
+                  />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Jangka Waktu (bulan)
+                  </label>
+                  <input
+                    type="number"
+                    id="waktuKredit"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    placeholder="24"
+                    min="1"
+                    required
+                  />
+                </div>
+                <button
+                  type="submit"
+                  class="w-full bg-red-600 text-white py-2 rounded-lg font-semibold hover:bg-red-700 transition-colors"
+                >
+                  Hitung Cicilan
+                </button>
+              </form>
+            </div>
+
+            <div class="simulation-card">
+              <div id="hasilKredit">
+                <div class="text-center text-gray-500 py-8">
+                  <i class="fas fa-calculator text-4xl mb-4"></i>
+                  <p>Masukkan data untuk melihat simulasi</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Simulasi Investasi -->
+        <div id="contentInvestasi" class="simulation-content hidden">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="simulation-card">
+              <h3 class="text-xl font-semibold text-gray-800 mb-4">
+                <i class="fas fa-chart-line text-blue-600 mr-2"></i>
+                Simulasi Investasi
+              </h3>
+              <form id="formInvestasi" class="space-y-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Modal Awal (Rp)
+                  </label>
+                  <input
+                    type="number"
+                    id="modalAwal"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    placeholder="5000000"
+                    min="0"
+                    required
+                  />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Tambahan Modal Bulanan (Rp)
+                  </label>
+                  <input
+                    type="number"
+                    id="tambahanBulanan"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    placeholder="500000"
+                    min="0"
+                  />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Return per Tahun (%)
+                  </label>
+                  <input
+                    type="number"
+                    id="returnInvestasi"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    placeholder="15"
+                    min="0"
+                    step="0.1"
+                    required
+                  />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Jangka Waktu (tahun)
+                  </label>
+                  <input
+                    type="number"
+                    id="waktuInvestasi"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    placeholder="10"
+                    min="1"
+                    required
+                  />
+                </div>
+                <button
+                  type="submit"
+                  class="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+                >
+                  Hitung Investasi
+                </button>
+              </form>
+            </div>
+
+            <div class="simulation-card">
+              <div id="hasilInvestasi">
+                <div class="text-center text-gray-500 py-8">
+                  <i class="fas fa-calculator text-4xl mb-4"></i>
+                  <p>Masukkan data untuk melihat simulasi</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Budget Planning -->
+        <div id="contentBudget" class="simulation-content hidden">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="simulation-card">
+              <h3 class="text-xl font-semibold text-gray-800 mb-4">
+                <i class="fas fa-wallet text-purple-600 mr-2"></i>
+                Budget Planning Mahasiswa
+              </h3>
+              <form id="formBudget" class="space-y-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Pendapatan Bulanan (Rp)
+                  </label>
+                  <input
+                    type="number"
+                    id="pendapatanBulanan"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    placeholder="2000000"
+                    min="0"
+                    required
+                  />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Biaya Makan (Rp)
+                  </label>
+                  <input
+                    type="number"
+                    id="biayaMakan"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    placeholder="600000"
+                    min="0"
+                  />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Biaya Transportasi (Rp)
+                  </label>
+                  <input
+                    type="number"
+                    id="biayaTransport"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    placeholder="200000"
+                    min="0"
+                  />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Biaya Pendidikan (Rp)
+                  </label>
+                  <input
+                    type="number"
+                    id="biayaPendidikan"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    placeholder="300000"
+                    min="0"
+                  />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Biaya Hiburan (Rp)
+                  </label>
+                  <input
+                    type="number"
+                    id="biayaHiburan"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    placeholder="150000"
+                    min="0"
+                  />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Biaya Lainnya (Rp)
+                  </label>
+                  <input
+                    type="number"
+                    id="biayaLainnya"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    placeholder="100000"
+                    min="0"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  class="w-full bg-purple-600 text-white py-2 rounded-lg font-semibold hover:bg-purple-700 transition-colors"
+                >
+                  Analisis Budget
+                </button>
+              </form>
+            </div>
+
+            <div class="simulation-card">
+              <div id="hasilBudget">
+                <div class="text-center text-gray-500 py-8">
+                  <i class="fas fa-calculator text-4xl mb-4"></i>
+                  <p>Masukkan data untuk melihat analisis</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      // Tab switching functionality
+      const tabButtons = document.querySelectorAll('.tab-button');
+      const contents = document.querySelectorAll('.simulation-content');
+
+      tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+          tabButtons.forEach(btn => btn.classList.remove('active'));
+          contents.forEach(content => content.classList.add('hidden'));
+          
+          button.classList.add('active');
+          const targetId = button.id.replace('tab', 'content');
+          document.getElementById(targetId).classList.remove('hidden');
+        });
+      });
+
+      // Simulasi Tabungan
+      document.getElementById('formTabungan').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const tabunganAwal = parseFloat(document.getElementById('tabunganAwal').value) || 0;
+        const setoranBulanan = parseFloat(document.getElementById('setoranBulanan').value);
+        const bungaTahunan = parseFloat(document.getElementById('bungaTabungan').value) || 0;
+        const waktuTahun = parseFloat(document.getElementById('waktuTabungan').value);
+        
+        const bungaBulanan = bungaTahunan / 100 / 12;
+        const totalBulan = waktuTahun * 12;
+        
+        let saldo = tabunganAwal;
+        let totalSetoran = setoranBulanan * totalBulan;
+        let totalBunga = 0;
+        
+        for (let i = 0; i < totalBulan; i++) {
+          saldo += setoranBulanan;
+          const bungaYangDidapat = saldo * bungaBulanan;
+          totalBunga += bungaYangDidapat;
+          saldo += bungaYangDidapat;
+        }
+        
+        const totalAkhir = saldo;
+        
+        document.getElementById('hasilTabungan').innerHTML = `
+          <div class="result-box">
+            <h4 class="text-lg font-semibold text-gray-800 mb-4">Hasil Simulasi Tabungan</h4>
+            <div class="space-y-3">
+              <div class="flex justify-between">
+                <span>Modal Awal:</span>
+                <span class="font-semibold">Rp ${tabunganAwal.toLocaleString('id-ID')}</span>
+              </div>
+              <div class="flex justify-between">
+                <span>Total Setoran:</span>
+                <span class="font-semibold">Rp ${totalSetoran.toLocaleString('id-ID')}</span>
+              </div>
+              <div class="flex justify-between">
+                <span>Total Bunga:</span>
+                <span class="font-semibold text-green-600">Rp ${totalBunga.toLocaleString('id-ID')}</span>
+              </div>
+              <div class="border-t pt-3">
+                <div class="flex justify-between text-lg font-bold">
+                  <span>Total Akhir:</span>
+                  <span class="text-blue-600">Rp ${totalAkhir.toLocaleString('id-ID')}</span>
+                </div>
+              </div>
+              <div class="mt-4 p-3 bg-blue-50 rounded-lg">
+                <p class="text-sm text-blue-800">
+                  <i class="fas fa-info-circle mr-1"></i>
+                  Dalam ${waktuTahun} tahun, tabungan Anda akan berkembang menjadi <strong>Rp ${totalAkhir.toLocaleString('id-ID')}</strong>
+                </p>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+
+      // Simulasi Kredit
+      document.getElementById('formKredit').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const pinjaman = parseFloat(document.getElementById('jumlahPinjaman').value);
+        const bungaTahunan = parseFloat(document.getElementById('bungaKredit').value);
+        const waktuBulan = parseFloat(document.getElementById('waktuKredit').value);
+        
+        const bungaBulanan = bungaTahunan / 100 / 12;
+        const cicilan = (pinjaman * bungaBulanan * Math.pow(1 + bungaBulanan, waktuBulan)) / 
+                       (Math.pow(1 + bungaBulanan, waktuBulan) - 1);
+        
+        const totalBayar = cicilan * waktuBulan;
+        const totalBunga = totalBayar - pinjaman;
+        
+        document.getElementById('hasilKredit').innerHTML = `
+          <div class="result-box">
+            <h4 class="text-lg font-semibold text-gray-800 mb-4">Hasil Simulasi Kredit</h4>
+            <div class="space-y-3">
+              <div class="flex justify-between">
+                <span>Jumlah Pinjaman:</span>
+                <span class="font-semibold">Rp ${pinjaman.toLocaleString('id-ID')}</span>
+              </div>
+              <div class="flex justify-between">
+                <span>Cicilan per Bulan:</span>
+                <span class="font-semibold text-red-600">Rp ${cicilan.toLocaleString('id-ID')}</span>
+              </div>
+              <div class="flex justify-between">
+                <span>Total Bunga:</span>
+                <span class="font-semibold">Rp ${totalBunga.toLocaleString('id-ID')}</span>
+              </div>
+              <div class="border-t pt-3">
+                <div class="flex justify-between text-lg font-bold">
+                  <span>Total Pembayaran:</span>
+                  <span class="text-red-600">Rp ${totalBayar.toLocaleString('id-ID')}</span>
+                </div>
+              </div>
+              <div class="mt-4 p-3 bg-red-50 rounded-lg">
+                <p class="text-sm text-red-800">
+                  <i class="fas fa-exclamation-triangle mr-1"></i>
+                  Pastikan kemampuan finansial Anda mencukupi untuk membayar cicilan <strong>Rp ${cicilan.toLocaleString('id-ID')}</strong> per bulan
+                </p>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+
+      // Simulasi Investasi
+      document.getElementById('formInvestasi').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const modalAwal = parseFloat(document.getElementById('modalAwal').value);
+        const tambahanBulanan = parseFloat(document.getElementById('tambahanBulanan').value) || 0;
+        const returnTahunan = parseFloat(document.getElementById('returnInvestasi').value);
+        const waktuTahun = parseFloat(document.getElementById('waktuInvestasi').value);
+        
+        const returnBulanan = returnTahunan / 100 / 12;
+        const totalBulan = waktuTahun * 12;
+        
+        let nilai = modalAwal;
+        let totalModal = modalAwal + (tambahanBulanan * totalBulan);
+        
+        for (let i = 0; i < totalBulan; i++) {
+          nilai += tambahanBulanan;
+          nilai = nilai * (1 + returnBulanan);
+        }
+        
+        const keuntungan = nilai - totalModal;
+        
+        document.getElementById('hasilInvestasi').innerHTML = `
+          <div class="result-box">
+            <h4 class="text-lg font-semibold text-gray-800 mb-4">Hasil Simulasi Investasi</h4>
+            <div class="space-y-3">
+              <div class="flex justify-between">
+                <span>Modal Awal:</span>
+                <span class="font-semibold">Rp ${modalAwal.toLocaleString('id-ID')}</span>
+              </div>
+              <div class="flex justify-between">
+                <span>Total Modal:</span>
+                <span class="font-semibold">Rp ${totalModal.toLocaleString('id-ID')}</span>
+              </div>
+              <div class="flex justify-between">
+                <span>Keuntungan:</span>
+                <span class="font-semibold text-green-600">Rp ${keuntungan.toLocaleString('id-ID')}</span>
+              </div>
+              <div class="border-t pt-3">
+                <div class="flex justify-between text-lg font-bold">
+                  <span>Nilai Akhir:</span>
+                  <span class="text-blue-600">Rp ${nilai.toLocaleString('id-ID')}</span>
+                </div>
+              </div>
+              <div class="mt-4 p-3 bg-green-50 rounded-lg">
+                <p class="text-sm text-green-800">
+                  <i class="fas fa-chart-line mr-1"></i>
+                  ROI: <strong>${((keuntungan/totalModal)*100).toFixed(2)}%</strong> dalam ${waktuTahun} tahun
+                </p>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+
+      // Budget Planning
+      document.getElementById('formBudget').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const pendapatan = parseFloat(document.getElementById('pendapatanBulanan').value);
+        const makan = parseFloat(document.getElementById('biayaMakan').value) || 0;
+        const transport = parseFloat(document.getElementById('biayaTransport').value) || 0;
+        const pendidikan = parseFloat(document.getElementById('biayaPendidikan').value) || 0;
+        const hiburan = parseFloat(document.getElementById('biayaHiburan').value) || 0;
+        const lainnya = parseFloat(document.getElementById('biayaLainnya').value) || 0;
+        
+        const totalPengeluaran = makan + transport + pendidikan + hiburan + lainnya;
+        const sisa = pendapatan - totalPengeluaran;
+        const persentasePengeluaran = (totalPengeluaran / pendapatan) * 100;
+        
+        let status = '';
+        let statusClass = '';
+        
+        if (persentasePengeluaran <= 50) {
+          status = 'Excellent! Sangat sehat';
+          statusClass = 'text-green-600';
+        } else if (persentasePengeluaran <= 70) {
+          status = 'Good! Cukup sehat';
+          statusClass = 'text-blue-600';
+        } else if (persentasePengeluaran <= 90) {
+          status = 'Warning! Perlu hati-hati';
+          statusClass = 'text-yellow-600';
+        } else {
+          status = 'Danger! Kurangi pengeluaran';
+          statusClass = 'text-red-600';
+        }
+        
+        document.getElementById('hasilBudget').innerHTML = `
+          <div class="result-box">
+            <h4 class="text-lg font-semibold text-gray-800 mb-4">Analisis Budget</h4>
+            <div class="space-y-3">
+              <div class="flex justify-between">
+                <span>Pendapatan:</span>
+                <span class="font-semibold">Rp ${pendapatan.toLocaleString('id-ID')}</span>
+              </div>
+              <div class="flex justify-between">
+                <span>Total Pengeluaran:</span>
+                <span class="font-semibold">Rp ${totalPengeluaran.toLocaleString('id-ID')}</span>
+              </div>
+              <div class="flex justify-between">
+                <span>Sisa Budget:</span>
+                <span class="font-semibold ${sisa >= 0 ? 'text-green-600' : 'text-red-600'}">
+                  Rp ${sisa.toLocaleString('id-ID')}
+                </span>
+              </div>
+              <div class="border-t pt-3">
+                <div class="flex justify-between">
+                  <span>Persentase Pengeluaran:</span>
+                  <span class="font-semibold ${statusClass}">${persentasePengeluaran.toFixed(1)}%</span>
+                </div>
+                <div class="mt-2">
+                  <span class="text-sm ${statusClass} font-semibold">${status}</span>
+                </div>
+              </div>
+              <div class="mt-4 space-y-2">
+                <div class="text-sm font-medium">Breakdown Pengeluaran:</div>
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                  <div>Makan: Rp ${makan.toLocaleString('id-ID')}</div>
+                  <div>Transport: Rp ${transport.toLocaleString('id-ID')}</div>
+                  <div>Pendidikan: Rp ${pendidikan.toLocaleString('id-ID')}</div>
+                  <div>Hiburan: Rp ${hiburan.toLocaleString('id-ID')}</div>
+                  <div class="col-span-2">Lainnya: Rp ${lainnya.toLocaleString('id-ID')}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+    </script>
+    <script type="module" src="../js/dashboard.js"></script>
+  </body>
+</html>

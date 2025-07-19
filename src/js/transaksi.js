@@ -534,3 +534,14 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 export default TransactionManager;
+
+document.getElementById('transactionForm').addEventListener('submit', function (e) {
+        const nominalInput = document.getElementById('nominalTransaksi');
+        const rawValue = nominalInput.value.replace(/\./g, ''); // Remove thousand separators
+        nominalInput.value = rawValue; // Update the input value
+      });
+
+      document.getElementById('nominalTransaksi').addEventListener('input', function (e) {
+        const value = e.target.value.replace(/\D/g, ''); // Remove non-numeric characters
+        e.target.value = new Intl.NumberFormat('id-ID').format(value); // Format as thousand-separated
+      });

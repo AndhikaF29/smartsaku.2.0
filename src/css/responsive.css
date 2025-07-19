@@ -1,0 +1,434 @@
+@media (max-width: 768px) {
+  /* CSS untuk HP */
+  /* Mobile Sidebar */
+  #sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    z-index: 1000;
+    width: 280px;
+  }
+
+  #sidebar.active {
+    transform: translateX(0);
+  }
+
+  .sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+  }
+
+  .sidebar-overlay.active {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .mobile-menu-btn {
+    position: fixed;
+    top: 0.75rem;
+    left: 0.75rem;
+    z-index: 1001;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    display: block;
+  }
+
+  /* Main Content */
+  main {
+    margin-left: 0 !important;
+    padding-top: 3rem;
+  }
+
+  /* General Spacing Reductions */
+  .p-6 {
+    padding: 0.75rem;
+  }
+
+  .px-6 {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  .py-6 {
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+  }
+
+  .mb-8 {
+    margin-bottom: 1rem;
+  }
+
+  .gap-6 {
+    gap: 0.75rem;
+  }
+
+  /* Header Mobile - More Compact */
+  .mb-8 .flex.items-center.justify-between {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 0.75rem;
+  }
+
+  .mb-8 .text-right {
+    text-align: left !important;
+  }
+
+  /* Typography - Smaller Sizes */
+  .text-3xl {
+    font-size: 1.5rem;
+    line-height: 1.75rem;
+  }
+
+  .text-2xl {
+    font-size: 1.25rem;
+    line-height: 1.5rem;
+  }
+
+  .text-lg {
+    font-size: 0.9rem;
+    line-height: 1.25rem;
+  }
+
+  .text-xl {
+    font-size: 1rem;
+    line-height: 1.375rem;
+  }
+
+  /* Dashboard Mobile - Compact Cards */
+  .dashboard-card {
+    margin-bottom: 0.75rem;
+    padding: 0.75rem;
+  }
+
+  .stats-card {
+    margin-bottom: 0.75rem;
+    padding: 0.75rem;
+  }
+
+  .stats-card::before {
+    height: 2px;
+  }
+
+  .health-card {
+    margin-bottom: 0.75rem;
+    padding: 0.75rem;
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  }
+
+  .health-card .grid.grid-cols-1.lg\:grid-cols-3 {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  /* Health Indicator - Green Circle with A+ */
+  .health-indicator {
+    width: 40px;
+    height: 40px;
+    font-size: 0.9rem;
+    margin: 0 auto 0.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+  }
+
+  /* Health Card Text - Smaller & Centered */
+  .health-card h3 {
+    font-size: 0.7rem;
+    margin: 0 0 0.1rem 0;
+    text-align: center;
+  }
+
+  .health-card p {
+    font-size: 0.6rem;
+    margin: 0;
+    text-align: center;
+  }
+
+  /* Progress Ring - Smaller & Centered */
+  .progress-ring {
+    width: 50px;
+    height: 50px;
+    margin: 0 auto;
+    position: relative;
+  }
+
+  .progress-ring svg {
+    width: 50px;
+    height: 50px;
+  }
+
+  .progress-ring circle {
+    r: 20;
+    cx: 25;
+    cy: 25;
+    stroke-width: 4;
+  }
+
+  .health-card #healthPercentage {
+    font-size: 0.875rem;
+  }
+
+  /* Financial Tip - Compact Like in Image */
+  .financial-tip {
+    padding: 0.5rem;
+    margin: 0;
+    font-size: 0.65rem;
+    border-left: 3px solid #f59e0b;
+    background: #fef9c3;
+    border-radius: 0.25rem;
+  }
+
+  .financial-tip .text-sm {
+    font-size: 0.65rem;
+  }
+
+  .financial-tip .text-xs {
+    font-size: 0.6rem;
+  }
+  
+  .financial-tip i {
+    color: #f59e0b;
+  }
+
+  /* Remove flexbox in financial tip to match image */
+  .financial-tip .flex {
+    display: block;
+  }
+
+  /* Charts - Much Smaller */
+  .chart-container {
+    height: 180px;
+  }
+
+  /* Grid Adjustments - Single Column */
+  .grid.grid-cols-1.md\:grid-cols-4 {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .grid.grid-cols-1.lg\:grid-cols-3 {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .grid.grid-cols-1.md\:grid-cols-2 {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .grid.grid-cols-1.lg\:grid-cols-2 {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  /* Recent Transactions - Smaller */
+  .recent-transactions-container {
+    max-height: 150px;
+  }
+
+  /* Transaksi Mobile - Compact */
+  .filter-card {
+    padding: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .filter-card .grid {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+
+  /* Improved filter layout for mobile */
+  .filter-card label {
+    font-size: 0.75rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .filter-card input, 
+  .filter-card select {
+    font-size: 0.875rem;
+    padding: 0.375rem 0.5rem;
+    height: 2.5rem;
+  }
+
+  /* Action buttons in filter */
+  .filter-card .flex {
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+  }
+
+  .filter-card button {
+    width: 100%;
+    padding: 0.5rem;
+    font-size: 0.875rem;
+  }
+
+  /* Search bar more compact */
+  .filter-card .flex:last-child {
+    flex-direction: row;
+  }
+
+  #searchTransaction {
+    flex-grow: 1;
+    height: 2.5rem;
+  }
+
+  #searchBtn {
+    width: auto;
+    height: 2.5rem;
+  }
+
+  /* Transaction table scrollable */
+  .transaction-table {
+    overflow-x: auto;
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .transaction-table .p-6 {
+    padding: 0.5rem;
+  }
+
+  .transaction-table table {
+    min-width: 600px;
+    font-size: 0.75rem;
+  }
+
+  .transaction-table th,
+  .transaction-table td {
+    padding: 0.5rem 0.375rem;
+  }
+
+  /* Pagination more compact */
+  .transaction-table .mt-6 {
+    margin-top: 0.75rem;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  .transaction-table .text-sm {
+    font-size: 0.7rem;
+    margin-bottom: 0.5rem;
+  }
+
+  /* Hide page numbers on mobile */
+  #pageNumbers {
+    display: none;
+  }
+
+  /* Stats cards in 2x2 grid */
+  .grid.grid-cols-1.md\:grid-cols-4 {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+  }
+
+  .stats-card {
+    margin-bottom: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    min-height: 85px;
+  }
+
+  .stats-card .text-sm {
+    font-size: 0.65rem;
+    line-height: 1;
+  }
+
+  .stats-card .text-2xl {
+    font-size: 0.95rem;
+    line-height: 1.2;
+    margin-top: 0.125rem;
+  }
+
+  /* Make the main CTA button smaller */
+  #addTransactionBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+    margin-top: 0.5rem;
+  }
+
+  /* Modal adjustments */
+  #modalTransaksi .modal-content {
+    padding: 0.75rem;
+  }
+
+  /* Very small screens - Even more compact */
+  @media (max-width: 480px) {
+    .p-6 {
+      padding: 0.5rem;
+    }
+
+    .text-3xl {
+      font-size: 1.25rem;
+    }
+
+    .text-2xl {
+      font-size: 1rem;
+    }
+
+    .chart-container {
+      height: 140px;
+    }
+
+    .health-card,
+    .stats-card,
+    .dashboard-card,
+    .simulation-card,
+    .settings-card,
+    .report-card {
+      padding: 0.5rem;
+    }
+
+    .progress-ring {
+      width: 60px;
+      height: 60px;
+    }
+
+    .progress-ring svg {
+      width: 60px;
+      height: 60px;
+    }
+
+    .progress-ring circle {
+      r: 25;
+      cx: 30;
+      cy: 30;
+    }
+
+    .health-indicator {
+      width: 32px;
+      height: 32px;
+      font-size: 0.875rem;
+    }
+
+    .profile-avatar {
+      width: 60px;
+      height: 60px;
+      font-size: 1.5rem;
+    }
+
+    .mobile-menu-btn {
+      padding: 0.375rem;
+    }
+
+    .tab-button {
+      font-size: 0.7rem;
+      padding: 0.25rem 0.5rem;
+    }
+  }
+}

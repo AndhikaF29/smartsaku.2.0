@@ -11,6 +11,8 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
     />
     <link rel="stylesheet" href="../css/dashboard.css" />
+    <link rel="stylesheet" href="../css/responsive.css" />
+    
     <style>
       .recent-transactions-container {
         max-height: 300px;
@@ -256,7 +258,6 @@
           <i class="fas fa-exchange-alt mr-3"></i>
           Transaksi
         </a>
-
         <a
           href="laporan.html"
           class="nav-link flex items-center px-6 py-3 text-gray-700 hover:bg-gray-100"
@@ -265,13 +266,19 @@
           Laporan
         </a>
         <a
+          href="simulasi.html"
+          class="nav-link flex items-center px-6 py-3 text-gray-700 hover:bg-gray-100"
+        >
+          <i class="fas fa-calculator mr-3"></i>
+          Simulasi
+        </a>
+        <a
           href="chat.html"
           class="nav-link flex items-center px-6 py-3 text-gray-700 hover:bg-gray-100"
         >
           <i class="fas fa-comment-dots mr-3"></i>
           Chat Ai
         </a>
-
         <a
           href="pengaturan.html"
           class="nav-link flex items-center px-6 py-3 text-gray-700 hover:bg-gray-100"
@@ -506,12 +513,6 @@
               <h3 class="text-lg font-semibold text-gray-900">
                 Transaksi Terbaru
               </h3>
-              <button
-                id="addTransactionBtn"
-                class="text-sm text-blue-600 hover:text-blue-800"
-              >
-                <i class="fas fa-plus mr-1"></i>Tambah
-              </button>
             </div>
             <div
               id="recentTransactions"
@@ -665,6 +666,19 @@
       </div>
     </div>
 
+    <!-- Floating Add Transaction Button -->
+    <button
+      id="addTransactionBtn"
+      class="fixed bottom-8 right-8 z-50 bg-blue-600 text-white rounded-full shadow-lg px-6 py-3 flex items-center gap-2 hover:bg-blue-700 transition-colors"
+    >
+      <i class="fas fa-plus"></i>
+      Tambah Transaksi
+    </button>
+
     <script type="module" src="../js/dashboard.js"></script>
+    <script type="module" src="../js/transaksi.js"></script>
+    <script type="module" src="../js/hamburgermenu.js"></script>
+    
+    
   </body>
 </html>
