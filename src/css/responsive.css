@@ -1,46 +1,44 @@
 @media (max-width: 768px) {
   /* CSS untuk HP */
-  /* Mobile Sidebar */
+  /* Hamburger Sidebar */
   #sidebar {
     transform: translateX(-100%);
     transition: transform 0.3s ease;
     z-index: 1000;
-    width: 280px;
+    width: 240px;
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 100%;
+    background: #fff;
   }
-
   #sidebar.active {
     transform: translateX(0);
   }
-
   .sidebar-overlay {
+    display: block;
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
     z-index: 999;
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.3s ease;
-  }
-
-  .sidebar-overlay.active {
     opacity: 1;
     visibility: visible;
   }
-
+  .sidebar-overlay:not(.active) {
+    opacity: 0;
+    visibility: hidden;
+  }
   .mobile-menu-btn {
+    display: block;
     position: fixed;
-    top: 0.75rem;
-    left: 0.75rem;
-    z-index: 1001;
-    background: white;
+    top: 1rem;
+    left: 1rem;
+    z-index: 1100;
+    background: #fff;
     border: 1px solid #e5e7eb;
     border-radius: 0.5rem;
-    padding: 0.5rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    display: block;
+    padding: 0.75rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
   }
 
   /* Main Content */
@@ -65,7 +63,7 @@
   }
 
   .mb-8 {
-    margin-bottom: 1rem;
+    margin-bottom: 0.75rem;
   }
 
   .gap-6 {
@@ -430,5 +428,338 @@
       font-size: 0.7rem;
       padding: 0.25rem 0.5rem;
     }
+  }
+
+  /* --- TRANSAKSI PAGE MOBILE --- */
+
+  /* Header & Add Button */
+  .mb-8 .flex.items-center.justify-between {
+    flex-direction: column;
+    align-items: stretch !important;
+    gap: 0.75rem;
+  }
+  #addTransactionBtn {
+    width: 100%;
+    justify-content: center;
+    margin-top: 0.5rem;
+    position: static;
+    border-radius: 0.75rem;
+    box-shadow: none;
+    right: auto;
+    bottom: auto;
+    font-size: 0.85rem;
+    padding: 0.75rem 0;
+  }
+
+  /* Stats Cards 2 kolom */
+  .grid.grid-cols-1.md\:grid-cols-4 {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+  }
+  .stats-card {
+    padding: 0.6rem 0.5rem;
+    margin-bottom: 0.5rem;
+    min-height: 80px;
+  }
+  .stats-card .text-2xl {
+    font-size: 1rem;
+  }
+  .stats-card .w-12.h-12 {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  /* Filter Card */
+  .filter-card {
+    padding: 0.75rem;
+    margin-bottom: 0.75rem;
+    border-radius: 0.75rem;
+  }
+  .filter-card .grid {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+  .filter-card label {
+    font-size: 0.8rem;
+    margin-bottom: 0.25rem;
+  }
+  .filter-card input,
+  .filter-card select {
+    font-size: 0.9rem;
+    padding: 0.35rem 0.5rem;
+    height: 2.3rem;
+  }
+  .filter-card .flex {
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+  }
+  .filter-card button {
+    width: 100%;
+    padding: 0.5rem;
+    font-size: 0.9rem;
+  }
+  .filter-card .flex.items-center.space-x-2 {
+    flex-direction: row;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+  }
+  #searchTransaction {
+    flex-grow: 1;
+    height: 2.3rem;
+    font-size: 0.9rem;
+  }
+  #searchBtn {
+    width: auto;
+    height: 2.3rem;
+    font-size: 1rem;
+    padding: 0 0.8rem;
+  }
+
+  /* Table & Pagination */
+  .transaction-table {
+    overflow-x: auto;
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+    border-radius: 0.75rem;
+  }
+  .transaction-table .p-6 {
+    padding: 0.5rem;
+  }
+  .transaction-table table {
+    min-width: 600px;
+    font-size: 0.75rem;
+  }
+  .transaction-table th,
+  .transaction-table td {
+    padding: 0.4rem 0.3rem;
+  }
+  .transaction-table .mb-6 {
+    margin-bottom: 0.5rem;
+  }
+  .transaction-table .mt-6 {
+    margin-top: 0.75rem;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: center;
+  }
+  .transaction-table .text-sm {
+    font-size: 0.7rem;
+    margin-bottom: 0.5rem;
+  }
+  #pageNumbers {
+    display: none;
+  }
+
+  /* Modal Transaksi */
+  #modalTransaksi .modal-content {
+    padding: 0.75rem;
+    margin: 1rem;
+    width: calc(100% - 2rem);
+    max-width: none;
+    border-radius: 1rem;
+  }
+  #modalTransaksi input,
+  #modalTransaksi select,
+  #modalTransaksi textarea {
+    font-size: 0.95rem;
+    padding: 0.5rem;
+  }
+  #modalTransaksi .flex.space-x-3 {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  #modalTransaksi button {
+    width: 100%;
+  }
+
+  /* Delete Modal */
+  #deleteModal .modal-content,
+  #deleteModal > div > div {
+    padding: 0.75rem;
+    margin: 1rem;
+    width: calc(100% - 2rem);
+    max-width: none;
+    border-radius: 1rem;
+  }
+
+  /* Hamburger Menu */
+  .mobile-menu-btn {
+    display: block;
+  }
+  #sidebar {
+    width: 240px;
+  }
+  #sidebar:not(.active) {
+    pointer-events: none;
+  }
+  .sidebar-overlay {
+    display: block;
+  }
+
+  /* Hide floating button on mobile if already in header */
+  @media (max-width: 768px) {
+    .fixed#addTransactionBtn {
+      display: none !important;
+    }
+  }
+
+  /* Transaksi Page Mobile Layout */
+  /* Header */
+  .mb-8 {
+    margin-bottom: 0.75rem;
+  }
+
+  .mb-8 .text-3xl {
+    font-size: 1.25rem;
+    line-height: 1.5;
+  }
+
+  /* Quick Stats Cards */
+  .grid.grid-cols-1.md\:grid-cols-4 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .stats-card {
+    padding: 0.625rem;
+    min-height: 0;
+  }
+
+  .stats-card .text-sm {
+    font-size: 0.7rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .stats-card .text-2xl {
+    font-size: 0.875rem;
+  }
+
+  .stats-card .w-12.h-12 {
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+
+  /* Filter Card */
+  .filter-card {
+    padding: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .filter-card .grid {
+    gap: 0.5rem;
+  }
+
+  .filter-card label {
+    font-size: 0.75rem;
+    margin-bottom: 0.125rem;
+  }
+
+  .filter-card input,
+  .filter-card select {
+    font-size: 0.875rem;
+    padding: 0.375rem 0.5rem;
+    height: 2.25rem;
+  }
+
+  /* Filter Buttons */
+  .filter-card .flex {
+    gap: 0.5rem;
+  }
+
+  .filter-card .flex button {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+  }
+
+  /* Search Area */
+  .filter-card .flex:last-child {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.375rem;
+    margin-top: 0.5rem;
+  }
+
+  #searchTransaction {
+    height: 2.25rem;
+    padding: 0.375rem 0.5rem;
+    font-size: 0.875rem;
+  }
+
+  /* Transaction Table */
+  .transaction-table {
+    margin: 0 -0.75rem;
+    padding: 0.5rem;
+    border-radius: 0;
+    box-shadow: none;
+    background: transparent;
+  }
+
+  .transaction-table .overflow-x-auto {
+    margin: 0 -0.5rem;
+    padding: 0 0.5rem;
+  }
+
+  .transaction-table table {
+    font-size: 0.75rem;
+  }
+
+  .transaction-table th {
+    padding: 0.5rem 0.375rem;
+    font-size: 0.7rem;
+    white-space: nowrap;
+  }
+
+  .transaction-table td {
+    padding: 0.5rem 0.375rem;
+    font-size: 0.75rem;
+  }
+
+  /* Table Header */
+  .transaction-table .flex.items-center.justify-between {
+    flex-direction: column;
+    align-items: stretch !important;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .transaction-table .text-lg {
+    font-size: 1rem;
+  }
+
+  /* Entries Selector */
+  .transaction-table .flex.items-center.space-x-2 {
+    justify-content: flex-end;
+  }
+
+  /* Add Transaction Button */
+  #addTransactionBtn {
+    position: fixed;
+    bottom: 1rem;
+    right: 1rem;
+    padding: 0.625rem 1rem;
+    font-size: 0.875rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Modal */
+  #modalTransaksi .modal-content {
+    margin: 1rem;
+    padding: 1rem;
+    border-radius: 0.75rem;
+  }
+
+  #modalTransaksi form {
+    gap: 0.75rem;
+  }
+
+  #modalTransaksi input,
+  #modalTransaksi select,
+  #modalTransaksi textarea {
+    font-size: 0.875rem;
+    padding: 0.5rem;
   }
 }
