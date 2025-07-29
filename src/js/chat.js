@@ -17,7 +17,48 @@ class ChatManager {
             'Strategi melunasi hutang',
             'Berapa dana darurat yang ideal?',
             'Fitur-fitur apa saja yang ada di SmartSaku?',
-            'Bagaimana cara menganalisis pengeluaran saya?'
+            'Bagaimana cara menganalisis pengeluaran saya?',
+            'Bagaimana cara membuat rencana keuangan bulanan?',
+            'Apa itu rasio keuangan sehat?',
+            'Bagaimana cara mengelola uang THR?',
+            'Tips menabung untuk mahasiswa',
+            'Bagaimana cara menghindari utang konsumtif?',
+            'Bagaimana cara mengatur pengeluaran kuliah?',
+            'Tips belanja hemat di supermarket',
+            'Bagaimana cara mengelola uang jajan?',
+            'Apa pentingnya investasi sejak muda?',
+            'Bagaimana cara memulai investasi reksa dana?',
+            'Bagaimana cara membuat dana pensiun?',
+            'Bagaimana cara mengatur keuangan keluarga?',
+            'Bagaimana cara mengatur keuangan saat magang?',
+            'Tips mengatur keuangan untuk freelancer',
+            'Bagaimana cara mengatur cash flow bisnis kecil?',
+            'Bagaimana cara mengelola pengeluaran tak terduga?',
+            'Bagaimana cara mengatur prioritas pengeluaran?',
+            'Bagaimana cara mengatur keuangan saat liburan?',
+            'Tips mengelola uang bulanan agar tidak boros',
+            'Bagaimana cara mengatur keuangan untuk menikah?',
+            'Bagaimana cara mengelola penghasilan tambahan?',
+            'Bagaimana cara membuat catatan keuangan digital?',
+            'Bagaimana cara mengatur keuangan saat KKN?',
+            'Tips mengatur keuangan untuk anak kos',
+            'Bagaimana cara mengelola pengeluaran transportasi?',
+            'Bagaimana cara mengatur keuangan saat semester baru?',
+            'Bagaimana cara mengelola pengeluaran gadget?',
+            'Bagaimana cara mengatur keuangan saat wisuda?',
+            'Tips mengatur keuangan untuk ibu rumah tangga',
+            'Bagaimana cara mengelola pengeluaran kesehatan?',
+            'Bagaimana cara mengatur keuangan saat pandemi?',
+            'Bagaimana cara mengelola pengeluaran hobi?',
+            'Bagaimana cara mengatur keuangan untuk traveling?',
+            'Bagaimana cara mengelola pengeluaran pulsa/internet?',
+            'Bagaimana cara mengatur keuangan saat punya anak?',
+            'Bagaimana cara mengelola pengeluaran bulanan keluarga?',
+            'Bagaimana cara mengatur keuangan untuk usaha sampingan?',
+            'Bagaimana cara mengelola pengeluaran makan di luar?',
+            'Bagaimana cara mengatur keuangan saat dapat beasiswa?',
+            'Bagaimana cara mengelola pengeluaran skincare/kosmetik?',
+            'Bagaimana cara mengatur keuangan untuk event kampus?',
         ];
 
         this.knowledgeBase = {
@@ -121,6 +162,113 @@ class ChatManager {
                     <li><strong>Pengaturan</strong> - Mengatur profil dan preferensi aplikasi</li>
                 </ul>
                 <p class="mt-2">Untuk memulai, tambahkan transaksi reguler Anda agar dapat melihat analisis yang lebih akurat.</p>
+            `,
+
+            'rencana keuangan bulanan': `
+                <p>Rencana keuangan bulanan membantu Anda mengatur pemasukan dan pengeluaran agar tidak boros.</p>
+                <ol class="ml-5 space-y-2 mt-2">
+                    <li>Buat daftar pemasukan tetap dan tambahan.</li>
+                    <li>Catat semua pengeluaran rutin dan variabel.</li>
+                    <li>Tentukan prioritas pengeluaran (kebutuhan pokok, tabungan, hiburan).</li>
+                    <li>Gunakan aplikasi SmartSaku untuk memantau realisasi anggaran.</li>
+                    <li>Evaluasi setiap akhir bulan dan sesuaikan target bulan berikutnya.</li>
+                </ol>
+            `,
+
+            'rasio keuangan sehat': `
+                <p>Rasio keuangan sehat menurut para ahli:</p>
+                <ul class="ml-5 space-y-2 mt-2">
+                    <li><strong>Tabungan & investasi:</strong> minimal 20% dari pendapatan</li>
+                    <li><strong>Pengeluaran rutin:</strong> maksimal 50-60%</li>
+                    <li><strong>Hiburan & gaya hidup:</strong> maksimal 20-30%</li>
+                    <li><strong>Utang konsumtif:</strong> maksimal 30% dari pendapatan</li>
+                </ul>
+                <p class="mt-2">Gunakan fitur analisis SmartSaku untuk memantau rasio keuangan Anda.</p>
+            `,
+
+            'uang THR': `
+                <p>Tips mengelola uang THR:</p>
+                <ul class="ml-5 space-y-2 mt-2">
+                    <li>Prioritaskan untuk kebutuhan pokok dan pembayaran utang.</li>
+                    <li>Alokasikan sebagian untuk tabungan/investasi.</li>
+                    <li>Gunakan sebagian kecil untuk hiburan atau belanja.</li>
+                    <li>Catat penggunaan THR di SmartSaku agar tidak boros.</li>
+                </ul>
+            `,
+
+            'menabung mahasiswa': `
+                <p>Tips menabung untuk mahasiswa:</p>
+                <ul class="ml-5 space-y-2 mt-2">
+                    <li>Buat target tabungan bulanan, walau kecil.</li>
+                    <li>Gunakan rekening terpisah untuk tabungan.</li>
+                    <li>Manfaatkan promo kampus atau diskon mahasiswa.</li>
+                    <li>Catat pemasukan tambahan (magang, freelance).</li>
+                </ul>
+            `,
+
+            'utang konsumtif': `
+                <p>Utang konsumtif adalah utang untuk kebutuhan konsumsi (bukan produktif).</p>
+                <ul class="ml-5 space-y-2 mt-2">
+                    <li>Batasi utang konsumtif maksimal 30% dari pendapatan.</li>
+                    <li>Prioritaskan pelunasan utang berbunga tinggi.</li>
+                    <li>Hindari menambah utang baru sebelum utang lama lunas.</li>
+                </ul>
+            `,
+
+            'pengeluaran kuliah': `
+                <p>Tips mengatur pengeluaran kuliah:</p>
+                <ul class="ml-5 space-y-2 mt-2">
+                    <li>Buat anggaran bulanan untuk biaya kuliah, buku, transportasi, dan makan.</li>
+                    <li>Manfaatkan fasilitas kampus (wifi, perpustakaan).</li>
+                    <li>Catat semua pengeluaran di SmartSaku.</li>
+                </ul>
+            `,
+
+            'belanja hemat supermarket': `
+                <p>Tips belanja hemat di supermarket:</p>
+                <ul class="ml-5 space-y-2 mt-2">
+                    <li>Buat daftar belanja sebelum berangkat.</li>
+                    <li>Bandingkan harga dan pilih produk diskon.</li>
+                    <li>Hindari belanja impulsif.</li>
+                </ul>
+            `,
+
+            'uang jajan': `
+                <p>Tips mengelola uang jajan:</p>
+                <ul class="ml-5 space-y-2 mt-2">
+                    <li>Tentukan batas harian/mingguan.</li>
+                    <li>Catat pengeluaran kecil agar tidak bocor halus.</li>
+                    <li>Gunakan uang jajan untuk kebutuhan prioritas.</li>
+                </ul>
+            `,
+
+            'investasi muda': `
+                <p>Investasi sejak muda sangat penting untuk masa depan:</p>
+                <ul class="ml-5 space-y-2 mt-2">
+                    <li>Mulai dari nominal kecil secara rutin.</li>
+                    <li>Pilih instrumen sesuai profil risiko (reksa dana, saham, SBN).</li>
+                    <li>Manfaatkan fitur analisis SmartSaku untuk memantau hasil investasi.</li>
+                </ul>
+            `,
+
+            'reksa dana': `
+                <p>Langkah memulai investasi reksa dana:</p>
+                <ol class="ml-5 space-y-2 mt-2">
+                    <li>Pilih jenis reksa dana (pasar uang, pendapatan tetap, saham).</li>
+                    <li>Buka rekening di platform resmi.</li>
+                    <li>Setor dana sesuai kemampuan.</li>
+                    <li>Monitor kinerja dan lakukan evaluasi berkala.</li>
+                </ol>
+            `,
+
+            'dana pensiun': `
+                <p>Tips membuat dana pensiun:</p>
+                <ul class="ml-5 space-y-2 mt-2">
+                    <li>Tentukan target dana pensiun sesuai kebutuhan.</li>
+                    <li>Mulai investasi sejak dini.</li>
+                    <li>Gunakan instrumen jangka panjang (SBN, reksa dana, saham).</li>
+                    <li>Evaluasi dan sesuaikan strategi setiap tahun.</li>
+                </ul>
             `
         };
 
@@ -295,7 +443,7 @@ class ChatManager {
         const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
         const messageHTML = `
-            <div class="message-user p-4 rounded-lg mb-4 shadow-sm">
+            <div class="message-user p-4 rounded-lg mb-4 shadow-sm animate-fade-in">
                 <div class="flex items-start flex-row-reverse">
                     <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center ml-3">
                         <i class="fas fa-user text-green-600"></i>
@@ -312,7 +460,9 @@ class ChatManager {
         `;
 
         chatMessages.insertAdjacentHTML('beforeend', messageHTML);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
+        setTimeout(() => {
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }, 100);
 
         // Add to history
         this.chatHistory.push({
@@ -332,25 +482,69 @@ class ChatManager {
             typingIndicator.remove();
         }
 
-        const messageHTML = `
-            <div class="message-ai p-4 rounded-lg mb-4 shadow-sm">
-                <div class="flex items-start">
-                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-3">
-                        <i class="fas fa-robot text-blue-500"></i>
-                    </div>
-                    <div>
-                        <p class="font-medium text-gray-800">SmartSaku AI</p>
-                        <div class="text-gray-700 mt-1">
-                            ${htmlContent}
-                        </div>
-                        <p class="text-xs text-gray-500 mt-2">${time}</p>
-                    </div>
+        // Container for typewriter effect
+        const wrapper = document.createElement('div');
+        wrapper.className = "message-ai p-4 rounded-lg mb-4 shadow-sm animate-fade-in";
+        wrapper.innerHTML = `
+            <div class="flex items-start">
+                <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-3">
+                    <i class="fas fa-robot text-blue-500"></i>
+                </div>
+                <div>
+                    <p class="font-medium text-gray-800">SmartSaku AI</p>
+                    <div class="text-gray-700 mt-1" id="aiTypewriter"></div>
+                    <p class="text-xs text-gray-500 mt-2">${time}</p>
                 </div>
             </div>
         `;
+        chatMessages.appendChild(wrapper);
 
-        chatMessages.insertAdjacentHTML('beforeend', messageHTML);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
+        // Typewriter effect per kata dengan HTML (preserve formatting)
+        const typewriterDiv = wrapper.querySelector('#aiTypewriter');
+        // Split htmlContent into words, preserving tags
+        const htmlWords = [];
+        let buffer = '';
+        let inTag = false;
+        for (let i = 0; i < htmlContent.length; i++) {
+            const char = htmlContent[i];
+            if (char === '<') {
+                if (buffer) {
+                    htmlWords.push(...buffer.split(' '));
+                    buffer = '';
+                }
+                inTag = true;
+                buffer += char;
+            } else if (char === '>') {
+                buffer += char;
+                htmlWords.push(buffer);
+                buffer = '';
+                inTag = false;
+            } else {
+                buffer += char;
+            }
+        }
+        if (buffer) htmlWords.push(...buffer.split(' '));
+
+        let idx = 0;
+        let current = '';
+        function typeNext() {
+            if (idx < htmlWords.length) {
+                const word = htmlWords[idx];
+                if (word.startsWith('<') && word.endsWith('>')) {
+                    current += word;
+                } else {
+                    current += (current && !current.endsWith('>') ? ' ' : '') + word;
+                }
+                typewriterDiv.innerHTML = current + '<span class="blinking-cursor">▌</span>';
+                idx++;
+                setTimeout(typeNext, 45);
+            } else {
+                typewriterDiv.innerHTML = htmlContent;
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        typeNext();
 
         // Add to history
         this.chatHistory.push({
@@ -358,8 +552,6 @@ class ChatManager {
             message: htmlContent,
             timestamp: new Date()
         });
-
-        // Refresh suggestions
         this.updateSuggestionChips();
     }
 
@@ -367,7 +559,7 @@ class ChatManager {
         const chatMessages = document.getElementById('chatMessages');
 
         const indicatorHTML = `
-            <div id="typingIndicator" class="message-ai p-4 rounded-lg mb-4 shadow-sm">
+            <div id="typingIndicator" class="message-ai p-4 rounded-lg mb-4 shadow-sm animate-fade-in">
                 <div class="flex items-start">
                     <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-3">
                         <i class="fas fa-robot text-blue-500"></i>
@@ -385,7 +577,9 @@ class ChatManager {
         `;
 
         chatMessages.insertAdjacentHTML('beforeend', indicatorHTML);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
+        setTimeout(() => {
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }, 100);
     }
 
     updateSuggestionChips() {
@@ -429,6 +623,13 @@ class ChatManager {
         console.log("Generating response for:", userMessage);
 
         try {
+            // Cek knowledgeBase dulu, jika ada jawaban langsung tampilkan
+            const key = Object.keys(this.knowledgeBase).find(k => userMessage.toLowerCase().includes(k));
+            if (key) {
+                this.addAIMessage(this.knowledgeBase[key]);
+                return;
+            }
+
             // Periksa apakah pesan tentang analisis keuangan pengguna
             const isFinancialAnalysisRequest = this.isFinancialAnalysisRequest(userMessage);
             const isSaldoRequest = this.isSaldoRequest(userMessage);
@@ -571,6 +772,26 @@ class ChatManager {
         `;
     }
 }
+
+// Animasi fade-in untuk chat
+const style = document.createElement('style');
+style.innerHTML = `
+.animate-fade-in {
+    animation: fadeInChat 0.5s ease;
+}
+@keyframes fadeInChat {
+    from { opacity: 0; transform: translateY(10px);}
+    to { opacity: 1; transform: translateY(0);}
+}
+.blinking-cursor {
+    animation: blink 1s steps(1) infinite;
+}
+@keyframes blink {
+    0%,100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+`;
+document.head.appendChild(style);
 
 // Initialize chat manager when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {

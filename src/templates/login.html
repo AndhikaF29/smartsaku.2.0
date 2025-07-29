@@ -156,6 +156,14 @@
               Masuk
             </button>
           </form>
+          <!-- Tombol Gunakan Akun Demo -->
+          <button
+            type="button"
+            id="btnDemo"
+            class="w-full mt-4 bg-gray-200 text-gray-700 py-2 px-4 rounded-lg font-semibold hover:bg-gray-300 transition-all"
+          >
+            Gunakan Akun Demo
+          </button>
         </div>
 
         <!-- Footer -->
@@ -360,6 +368,11 @@
       // Inisialisasi controller saat DOM ready
       document.addEventListener("DOMContentLoaded", () => {
         new LoginController();
+        // Demo Credential Button
+        document.getElementById("btnDemo").addEventListener("click", function() {
+          document.getElementById("email").value = "andhikafajarprayoga@gmail.com";
+          document.getElementById("password").value = "12345678";
+        });
       });
     </script>
     <script type="module" src="../main.js"></script>
