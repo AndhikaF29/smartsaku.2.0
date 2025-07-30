@@ -7,7 +7,7 @@ class TransactionService {
                 .from('transactions')
                 .select('*')
                 .eq('user_id', userId)
-                .order('tanggal', { ascending: false });
+                .order('tanggal', { ascending: false }); // sudah urut dari terbaru
 
             if (error) {
                 console.error('Error fetching transactions:', error);

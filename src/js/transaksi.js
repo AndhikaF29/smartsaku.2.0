@@ -375,10 +375,13 @@ class TransactionManager {
         e.preventDefault();
 
         const formData = new FormData(e.target);
+        // Ambil nominal, hapus semua non-digit sebelum parseFloat
+        let nominalRaw = formData.get('nominal');
+        nominalRaw = typeof nominalRaw === 'string' ? nominalRaw.replace(/\D/g, '') : nominalRaw;
         const transactionData = {
             user_id: this.currentUser.id,
             jenis: formData.get('jenis'),
-            nominal: parseFloat(formData.get('nominal')),
+            nominal: parseFloat(nominalRaw),
             kategori: formData.get('kategori'),
             deskripsi: formData.get('deskripsi') || null,
             tanggal: formData.get('tanggal')
@@ -530,18 +533,11 @@ class TransactionManager {
 
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    window.transactionManager = new TransactionManager();
+    // Pastikan hanya ada satu instance TransactionManager
+    if (!window.transactionManager) {
+        window.transactionManager = new TransactionManager();
+    }
 });
 
+
 export default TransactionManager;
-
-document.getElementById('transactionForm').addEventListener('submit', function (e) {
-        const nominalInput = document.getElementById('nominalTransaksi');
-        const rawValue = nominalInput.value.replace(/\./g, ''); // Remove thousand separators
-        nominalInput.value = rawValue; // Update the input value
-      });
-
-      document.getElementById('nominalTransaksi').addEventListener('input', function (e) {
-        const value = e.target.value.replace(/\D/g, ''); // Remove non-numeric characters
-        e.target.value = new Intl.NumberFormat('id-ID').format(value); // Format as thousand-separated
-      });

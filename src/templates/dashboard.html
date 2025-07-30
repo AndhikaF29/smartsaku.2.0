@@ -595,7 +595,7 @@
                 >Nominal</label
               >
               <input
-                type="number"
+                type="text"
                 id="nominalTransaksi"
                 name="nominal"
                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -676,9 +676,22 @@
     </button>
 
     <script type="module" src="../js/dashboard.js"></script>
-    <script type="module" src="../js/transaksi.js"></script>
     <script type="module" src="../js/hamburgermenu.js"></script>
-    
-    
+    <script>
+      // Format nominal input as user types (thousand separator)
+      document.addEventListener('DOMContentLoaded', function () {
+        const nominalInput = document.getElementById('nominalTransaksi');
+        if (nominalInput) {
+          nominalInput.addEventListener('input', function (e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value) {
+              e.target.value = new Intl.NumberFormat('id-ID').format(value);
+            } else {
+              e.target.value = '';
+            }
+          });
+        }
+      });
+    </script>
   </body>
 </html>
