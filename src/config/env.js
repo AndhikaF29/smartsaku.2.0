@@ -1,46 +1,49 @@
-// Konfigurasi variabel lingkungan untuk SmartSaku
-// File ini berisi fungsi untuk mengambil konfigurasi dari variabel lingkungan
-// atau dari file konfigurasi lokal yang tidak dicommit
-
 /**
- * Mendapatkan konfigurasi lingkungan untuk aplikasi
- * @returns {Object} Objek berisi variabel konfigurasi
+ * Configuration service for environment variables
+ * Safe for production and development with Vercel/Railway
  */
-export function getEnvConfig() {
-    // Prioritaskan variabel lingkungan jika tersedia
-    if (typeof process !== 'undefined' && process.env) {
-        return {
-            GROQ_API_KEY: process.env.GROQ_API_KEY || '',
-            // Tambahkan variabel lingkungan lain di sini
-        };
-    }
 
-    // Jika tidak, coba load dari window.ENV (diinjeksi dari server)
-    if (typeof window !== 'undefined' && window.ENV) {
-        return window.ENV;
-    }
+// Check if we have import.meta.env (Vite environment)
+const isViteEnv = typeof import.meta !== 'undefined' && import.meta.env;
 
-    // Default fallback - ini sebaiknya diubah saat deployment
-    console.warn('Variabel lingkungan tidak tersedia, menggunakan konfigurasi default');
-    return {
-        GROQ_API_KEY: '',
-        // Tambahkan variabel lingkungan lain di sini dengan nilai default aman
-    };
+// Try to load environment variables from different sources based on environment
+const config = {
+    // Production uses environment variables from Vercel/Railway
+    // Development uses import.meta.env from Vite or falls back to empty strings
+    GROQ_API_KEY: isViteEnv ? import.meta.env.VITE_GROQ_API_KEY : '',
+    SUPABASE_URL: isViteEnv ? import.meta.env.VITE_SUPABASE_URL : '',
+    SUPABASE_KEY: isViteEnv ? import.meta.env.VITE_SUPABASE_KEY : '',
+    APP_NAME: isViteEnv ? import.meta.env.VITE_APP_NAME || 'SmartSaku' : 'SmartSaku',
+    APP_ENVIRONMENT: isViteEnv ? import.meta.env.VITE_APP_ENVIRONMENT || 'development' : 'development'
+};
+
+// Try to load from window.ENV if available (for local development with config.local.js)
+if (typeof window !== 'undefined' && window.ENV) {
+    if (window.ENV.GROQ_API_KEY) config.GROQ_API_KEY = window.ENV.GROQ_API_KEY;
+    if (window.ENV.SUPABASE_URL) config.SUPABASE_URL = window.ENV.SUPABASE_URL;
+    if (window.ENV.SUPABASE_ANON_KEY) config.SUPABASE_KEY = window.ENV.SUPABASE_ANON_KEY;
 }
 
-/**
- * Memeriksa apakah semua konfigurasi yang diperlukan sudah tersedia
- * @returns {boolean} true jika semua konfigurasi tersedia
- */
-export function isConfigComplete() {
-    const config = getEnvConfig();
+// Function to get configuration
+export function getEnvConfig() {
+    return config;
+}
 
-    // Daftar konfigurasi yang diperlukan
-    const requiredConfigs = [
-        'GROQ_API_KEY',
-        // Tambahkan konfigurasi wajib lainnya di sini
-    ];
+// Function to check if the API key is configured
+export function isApiKeyConfigured() {
+    return !!config.GROQ_API_KEY && config.GROQ_API_KEY.trim() !== '';
+}
 
-    // Periksa apakah semua konfigurasi tersedia
-    return requiredConfigs.every(key => !!config[key]);
+// For testing purposes only - don't use in production
+export function setEnvConfig(key, value) {
+    if (key in config) {
+        config[key] = value;
+        return true;
+    }
+    return false;
+}
+
+export function clearEnvConfig() {
+    // This only clears the runtime values, not the actual environment
+    console.warn('Environment variables cannot be cleared at runtime');
 }

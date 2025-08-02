@@ -77,6 +77,19 @@
         padding: 1.5rem;
         margin-bottom: 1.5rem;
       }
+
+      #apiSettingsModal {
+        transition: opacity 0.3s ease;
+      }
+
+      #apiSettingsModal.hidden {
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      #apiSettingsModal.flex {
+        opacity: 1;
+      }
     </style>
   </head>
   <body class="bg-gray-50">
@@ -189,6 +202,20 @@
               </p>
             </div>
             <div class="flex items-center space-x-4">
+              <div class="flex items-center space-x-2">
+                <label for="modelSelector" class="text-sm text-gray-700"
+                  >Model:</label
+                >
+                <select
+                  id="modelSelector"
+                  class="px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="ai">AI Model (V2)</option>
+                  <option value="manual" selected>
+                    Ai Model (V1)
+                  </option>
+                </select>
+              </div>
               <span class="text-gray-700" id="greeting">Selamat Datang!</span>
               <span class="text-gray-600" id="currentDate">Loading...</span>
             </div>
@@ -221,6 +248,7 @@
                       <li>Informasi tentang fitur SmartSaku</li>
                       <li>Dan berbagai pertanyaan keuangan lainnya</li>
                     </ul>
+                    
                     <p class="mt-2">
                       Silakan tanyakan apa saja tentang keuangan pribadi Anda!
                     </p>
@@ -279,7 +307,9 @@
       </div>
     </main>
 
+    <!-- API key is now loaded from .env file -->
+
     <script type="module" src="../js/chat.js"></script>
-     <script type="module" src="../js/hamburgermenu.js"></script>
+    <script type="module" src="../js/hamburgermenu.js"></script>
   </body>
 </html>

@@ -7,6 +7,16 @@ class GroqService {
         this.apiKey = config.GROQ_API_KEY || '';
         this.apiUrl = 'https://api.groq.com/openai/v1/chat/completions';
         this.model = 'meta-llama/llama-4-scout-17b-16e-instruct';
+
+        // Debug info for API key
+        console.log('Groq API key configured from .env:', this.apiKey ? 'Yes (length: ' + this.apiKey.length + ')' : 'No');
+
+        // Log first few and last few chars to verify correct loading
+        if (this.apiKey && this.apiKey.length > 10) {
+            const firstFew = this.apiKey.substring(0, 5);
+            const lastFew = this.apiKey.substring(this.apiKey.length - 5);
+            console.log(`API key preview: ${firstFew}...${lastFew}`);
+        }
     }
 
     async generateResponse(userMessage, context = '') {
@@ -17,10 +27,20 @@ class GroqService {
         }
 
         try {
+            // Enhanced system prompt for more dynamic responses
             const systemPrompt = `Anda adalah asisten keuangan pribadi SmartSaku yang membantu pengguna dengan pengelolaan keuangan mereka.
-Anda hanya membahas topik terkait keuangan pribadi, tabungan, investasi, anggaran, dan topik keuangan lainnya.
-Berikan jawaban dalam Bahasa Indonesia yang ringkas, informatif, dan praktis.
-${context ? 'Berikut konteks data keuangan pengguna yang mungkin relevan: ' + context : ''}`;
+Anda harus memberikan jawaban yang personal, detail, dan spesifik untuk setiap pertanyaan.
+Jangan memberikan jawaban template atau generik.
+Gunakan bahasa yang ramah dan mudah dipahami dalam Bahasa Indonesia.
+Format jawaban Anda menggunakan HTML tags seperti <p>, <ul>, <li>, <strong> untuk tampilan yang lebih baik.
+
+${context ? 'Konteks Data Keuangan Pengguna:\n' + context + '\nGunakan data ini untuk memberikan saran yang lebih personal.' : ''}
+
+Panduan tambahan:
+- Berikan contoh konkret dan spesifik
+- Jelaskan alasan di balik setiap saran
+- Sesuaikan saran dengan kondisi pengguna
+- Jika ada data keuangan, gunakan untuk analisis`;
 
             const payload = {
                 model: this.model,
@@ -34,9 +54,11 @@ ${context ? 'Berikut konteks data keuangan pengguna yang mungkin relevan: ' + co
                         content: userMessage
                     }
                 ],
-                max_tokens: 800,
-                temperature: 0.7,
-                top_p: 0.9
+                max_tokens: 1000,
+                temperature: 0.9,
+                top_p: 1,
+                frequency_penalty: 0.5,
+                presence_penalty: 0.5
             };
 
             console.log('Sending request to Groq API');
@@ -169,7 +191,7 @@ ${context ? 'Berikut konteks data keuangan pengguna yang mungkin relevan: ' + co
             `,
 
             default: `
-                <p>Maaf, saat ini saya dalam model pengembangan dan hanya bisa memberikan informasi dasar tentang keuangan.</p>
+                <p>Maaf, saat ini saya dalam mode offline dan hanya bisa memberikan informasi dasar tentang keuangan.</p>
                 <p class="mt-2">Beberapa topik yang bisa saya bantu:</p>
                 <ul class="ml-5 mt-2">
                     <li>Tips mengatur budget</li>
@@ -178,7 +200,7 @@ ${context ? 'Berikut konteks data keuangan pengguna yang mungkin relevan: ' + co
                     <li>Informasi dasar investasi</li>
                     <li>Fitur-fitur SmartSaku</li>
                 </ul>
-                <p class="mt-2">Untuk analisis data keuangan personal, silakan coba lagi nanti saat model telah sempurna.</p>
+                <p class="mt-2">Untuk analisis data keuangan personal, silakan coba lagi nanti saat layanan online tersedia.</p>
             `
         };
 
@@ -228,6 +250,68 @@ ${context ? 'Berikut konteks data keuangan pengguna yang mungkin relevan: ' + co
                 <p><strong>Tip:</strong> Selalu pantau saldo secara rutin untuk menjaga kesehatan keuangan Anda.</p>
             </div>
         `;
+    }
+
+    // Method to update API key
+    updateApiKey(newKey) {
+        if (newKey && typeof newKey === 'string') {
+            this.apiKey = newKey.trim();
+            console.log('API key updated. New key configured:', this.apiKey ? 'Yes (length: ' + this.apiKey.length + ')' : 'No');
+            return true;
+        }
+        return false;
+    }
+
+    // Method to check if API is working
+    async testApiConnection() {
+        if (!this.apiKey || this.apiKey.trim() === '') {
+            return {
+                success: false,
+                message: 'API key tidak terkonfigurasi'
+            };
+        }
+
+        try {
+            const response = await fetch(this.apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${this.apiKey}`
+                },
+                body: JSON.stringify({
+                    model: this.model,
+                    messages: [
+                        {
+                            role: "system",
+                            content: "You are a helpful assistant."
+                        },
+                        {
+                            role: "user",
+                            content: "Test connection"
+                        }
+                    ],
+                    max_tokens: 10
+                })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                return {
+                    success: false,
+                    message: `Error: ${response.status} - ${errorData.error?.message || response.statusText}`
+                };
+            }
+
+            return {
+                success: true,
+                message: 'Koneksi API berhasil'
+            };
+        } catch (error) {
+            return {
+                success: false,
+                message: `Error: ${error.message}`
+            };
+        }
     }
 
     formatResponseAsHtml(text) {

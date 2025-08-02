@@ -1,12 +1,14 @@
 import AuthController from '../services/AuthController.js';
 import TransactionService from '../services/TransactionService.js';
 import GroqService from '../services/GroqService.js';
+import { setEnvConfig, getEnvConfig, clearEnvConfig } from '../config/env.js';
 
 class ChatManager {
     constructor() {
         this.currentUser = null;
         this.chatHistory = [];
         this.financialData = null;
+        this.selectedModel = 'manual'; // Default to manual
         this.suggestedQuestions = [
             'Bagaimana cara mengatur budget?',
             'Berapa ideal tabungan bulanan?',
@@ -373,6 +375,45 @@ class ChatManager {
     }
 
     setupEventListeners() {
+        // Model selector change event
+        const modelSelector = document.getElementById('modelSelector');
+        if (modelSelector) {
+            // Set initial value from the selected option
+            this.selectedModel = modelSelector.value;
+            console.log('Initial model set to:', this.selectedModel);
+
+            // API key should already be configured from .env
+            if (this.selectedModel === 'ai') {
+                const config = getEnvConfig();
+                if (!config.GROQ_API_KEY || config.GROQ_API_KEY.trim() === '') {
+                    console.warn('API key missing despite .env configuration');
+                    this.addSystemMessage('Warning: API key not found in environment variables.');
+                }
+            }
+
+            modelSelector.addEventListener('change', (e) => {
+                const newModel = e.target.value;
+
+                // API key should be available from .env, but let's check to be safe
+                if (newModel === 'ai') {
+                    const config = getEnvConfig();
+                    if (!config.GROQ_API_KEY || config.GROQ_API_KEY.trim() === '') {
+                        console.warn('API key missing despite .env configuration');
+                        this.addSystemMessage('API key not found in environment variables.');
+                    }
+                }
+
+                this.selectedModel = newModel;
+                console.log('Model changed to:', this.selectedModel);
+
+                // Add system message to inform user about model change
+                const modelName = this.selectedModel === 'ai' ? 'AI Model (New V2)' : 'Manual (V2)';
+                this.addSystemMessage(`Model diubah ke: ${modelName}`);
+            });
+        }
+
+        // Since API key is now loaded from .env file, API settings buttons are no longer needed
+
         // Chat form submission
         const chatForm = document.getElementById('chatForm');
         if (chatForm) {
@@ -555,6 +596,25 @@ class ChatManager {
         this.updateSuggestionChips();
     }
 
+    addSystemMessage(message) {
+        const chatMessages = document.getElementById('chatMessages');
+        const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        const messageHTML = `
+            <div class="text-center mb-4">
+                <div class="inline-block bg-gray-100 px-3 py-1 rounded-full text-sm text-gray-600">
+                    <i class="fas fa-cog mr-1"></i>
+                    ${message} - ${time}
+                </div>
+            </div>
+        `;
+
+        chatMessages.insertAdjacentHTML('beforeend', messageHTML);
+        setTimeout(() => {
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }, 100);
+    }
+
     showTypingIndicator() {
         const chatMessages = document.getElementById('chatMessages');
 
@@ -620,38 +680,78 @@ class ChatManager {
     }
 
     async generateResponse(userMessage) {
-        console.log("Generating response for:", userMessage);
+        console.log("Generating response for:", userMessage, "Mode:", this.selectedModel);
 
         try {
-            // Cek knowledgeBase dulu, jika ada jawaban langsung tampilkan
-            const key = Object.keys(this.knowledgeBase).find(k => userMessage.toLowerCase().includes(k));
-            if (key) {
-                this.addAIMessage(this.knowledgeBase[key]);
+            // If manual mode is selected, use knowledge base first
+            if (this.selectedModel === 'manual') {
+                console.log("Using manual mode - checking knowledge base");
+                const key = Object.keys(this.knowledgeBase).find(k => userMessage.toLowerCase().includes(k));
+                if (key) {
+                    this.addAIMessage(this.knowledgeBase[key]);
+                    return;
+                }
+
+                // If no match in knowledge base, check for special analysis requests
+                const isFinancialAnalysisRequest = this.isFinancialAnalysisRequest(userMessage);
+                const isSaldoRequest = this.isSaldoRequest(userMessage);
+
+                if (isFinancialAnalysisRequest) {
+                    this.addAIMessage(this.generateFinancialAnalysis());
+                    return;
+                }
+
+                if (isSaldoRequest) {
+                    this.addAIMessage(this.generateSaldoInformation());
+                    return;
+                }
+
+                // Fallback for manual mode when no match found
+                this.addAIMessage(`
+                    <p>Maaf, saya tidak memiliki informasi spesifik tentang pertanyaan Anda dalam mode manual.</p>
+                    <p class="mt-2">Beberapa topik yang bisa saya bantu:</p>
+                    <ul class="ml-5 mt-2">
+                        <li>Tips mengatur budget</li>
+                        <li>Strategi menabung</li>
+                        <li>Cara menghemat pengeluaran</li>
+                        <li>Informasi dasar investasi</li>
+                        <li>Fitur-fitur SmartSaku</li>
+                    </ul>
+                    <p class="mt-2">Atau ubah ke mode AI Model untuk jawaban yang lebih fleksibel.</p>
+                `);
                 return;
             }
 
-            // Periksa apakah pesan tentang analisis keuangan pengguna
+            // AI Mode - use Groq API directly, do NOT check knowledge base first
+            console.log("Using AI mode - calling Groq API");
             const isFinancialAnalysisRequest = this.isFinancialAnalysisRequest(userMessage);
             const isSaldoRequest = this.isSaldoRequest(userMessage);
 
             let contextData = '';
 
-            // Tambahkan konteks data keuangan jika diperlukan
+            // Add financial context if needed
             if (isFinancialAnalysisRequest || isSaldoRequest) {
                 contextData = this.prepareFinancialContext();
-                console.log("Menambahkan konteks keuangan ke prompt");
+                console.log("Adding financial context to prompt");
             }
 
-            // Gunakan API Groq untuk mendapatkan respons
+            // Use Groq API for response
             const response = await GroqService.generateResponse(userMessage, contextData);
-
             this.addAIMessage(response);
+
         } catch (error) {
             console.error("Error generating response:", error);
 
-            // Use GroqService fallback instead of showing error to user
-            const fallbackResponse = await GroqService.generateResponse(userMessage, contextData);
-            this.addAIMessage(fallbackResponse);
+            // Use GroqService fallback for AI mode, or manual fallback for manual mode
+            if (this.selectedModel === 'ai') {
+                const fallbackResponse = await GroqService.generateResponse(userMessage, '');
+                this.addAIMessage(fallbackResponse);
+            } else {
+                this.addAIMessage(`
+                    <p>Maaf, terjadi kesalahan dalam memproses permintaan Anda.</p>
+                    <p class="mt-2">Silakan coba lagi atau hubungi administrator.</p>
+                `);
+            }
         }
     }
 
@@ -770,6 +870,13 @@ class ChatManager {
             </div>
             <p class="mt-3">Untuk informasi lebih detail tentang transaksi Anda, silakan kunjungi halaman Dashboard atau Transaksi.</p>
         `;
+    }
+
+    // API key is now loaded directly from .env file, so these API Settings methods are no longer needed
+    // Keeping minimal methods for backward compatibility
+
+    showApiKeyRequiredMessage() {
+        this.addSystemMessage('API key not found in environment variables. Check your .env file.');
     }
 }
 
