@@ -4,28 +4,22 @@ import { resolve } from 'path';
 import react from '@vitejs/plugin-react'; // atau plugin lain sesuai project Anda
 
 export default defineConfig({
-    // Base path dimana aplikasi akan di-deploy
-    base: '/SmartSaku/',
+    // Base path untuk deployment di Vercel
+    base: './',
 
     publicDir: 'public',
 
     // Konfigurasi build
     build: {
         outDir: 'dist',
-        emptyOutDir: true,
-        assetsDir: 'assets',
-        minify: 'terser',
         sourcemap: true,
-        rollupOptions: {
-            input: {
-                main: resolve(__dirname, 'index.html'),
-                home: resolve(__dirname, 'src/templates/home.html')
+        // Memastikan env variables digunakan dengan benar
+        // https://vitejs.dev/config/build-options.html#build-sourcemap
+        minify: 'terser',
+        terserOptions: {
+            compress: {
+                drop_console: false,  // Tetap tampilkan console logs untuk debugging
             },
-            output: {
-                entryFileNames: 'assets/[name]-[hash].js',
-                chunkFileNames: 'assets/[name]-[hash].js',
-                assetFileNames: 'assets/[name]-[hash].[ext]'
-            }
         }
     },
 
@@ -40,15 +34,8 @@ export default defineConfig({
         },
     },    // Konfigurasi server development
     server: {
-        port: 3001,
-        open: true, // Buka browser otomatis
-        proxy: {
-            '/api': {
-                target: 'https://smartsaku.ddns.net',
-                changeOrigin: true,
-                secure: false
-            }
-        }
+        port: 3000,
+        open: true // Buka browser otomatis
     },
 
     // Konfigurasi untuk import file HTML sebagai string

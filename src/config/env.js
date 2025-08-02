@@ -6,6 +6,18 @@
 // Check if we have import.meta.env (Vite environment)
 const isViteEnv = typeof import.meta !== 'undefined' && import.meta.env;
 
+// Debug environment variables availability
+console.log('Environment Check:');
+if (isViteEnv) {
+    console.log('Running in Vite environment');
+    console.log('VITE_GROQ_API_KEY exists:', !!import.meta.env.VITE_GROQ_API_KEY);
+    console.log('VITE_SUPABASE_URL exists:', !!import.meta.env.VITE_SUPABASE_URL);
+    console.log('VITE_SUPABASE_KEY exists:', !!import.meta.env.VITE_SUPABASE_KEY);
+    console.log('Current environment:', import.meta.env.VITE_APP_ENVIRONMENT || 'not set');
+} else {
+    console.log('Not running in Vite environment');
+}
+
 // Try to load environment variables from different sources based on environment
 const config = {
     // Production uses environment variables from Vercel/Railway
